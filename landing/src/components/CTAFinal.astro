@@ -1,0 +1,44 @@
+---
+import SkullMark from "./SkullMark.astro";
+const APP_URL = "https://ghouls-to-bricks.vercel.app/";
+---
+
+<section class="cta">
+  <div class="wrap cta-inner">
+    <div class="cta-mark" aria-hidden="true"><SkullMark /></div>
+    <h2>Your Ghoul is waiting to be reforged.</h2>
+    <p>Free, instant, and it never leaves your browser.</p>
+    <a class="btn btn-primary" href={APP_URL}>Build my Ghoul →</a>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-block: var(--space-section);
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+
+  .cta-inner {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+  }
+
+  .cta-mark {
+    width: 34px;
+    aspect-ratio: 1 / 1;
+    color: var(--ghoul);
+    margin-bottom: 0.5rem;
+  }
+
+  .cta h2 {
+    font-size: var(--h2);
+    max-width: 24ch;
+  }
+
+  .cta p {
+    color: var(--bone-dim);
+    margin-bottom: 0.5rem;
+  }
+</style>
