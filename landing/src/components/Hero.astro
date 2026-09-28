@@ -6,10 +6,10 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
 <section id="top" class="hero">
   <div class="hero-mark" aria-hidden="true"><SkullMark /></div>
   <div class="wrap hero-inner">
-    <p class="eyebrow">Free · unofficial fan tool · 100% in your browser</p>
+    <p class="eyebrow">free · unofficial fan tool · 100% client-side</p>
     <h1 class="hero-title">
       Consumed as a jpeg.<br />
-      <span class="accent">Summoned anew</span> in ABS.
+      <span class="accent">Brick my Ghoul<span class="caret" aria-hidden="true"></span></span>
     </h1>
     <p class="hero-sub">
       Drop your Based Ghoul in and watch it get reforged, stud by stud, into a
@@ -18,8 +18,8 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
       lookup.
     </p>
     <div class="hero-cta">
-      <a class="btn btn-primary" href={APP_URL}>Build my Ghoul →</a>
-      <a class="btn btn-ghost" href="#how">See how it works</a>
+      <a class="btn btn-primary" href={APP_URL}>./build-my-ghoul</a>
+      <a class="btn btn-ghost" href="#how">see how it works</a>
     </div>
     <p class="hero-note">
       Not affiliated with, sponsored or endorsed by the Based Ghouls project
@@ -38,12 +38,12 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
 
   .hero-mark {
     position: absolute;
-    inset: -8% 0 auto;
-    width: min(46vw, 620px);
-    aspect-ratio: 1 / 1;
+    inset: -6% 0 auto;
+    width: min(38vw, 480px);
+    aspect-ratio: 22 / 26;
     margin-inline: auto;
     color: var(--ghoul);
-    opacity: 0.06;
+    opacity: 0.08;
     pointer-events: none;
   }
 
@@ -62,6 +62,7 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
 
   .accent {
     color: var(--ghoul);
+    font-family: var(--mono);
   }
 
   .hero-sub {
@@ -79,9 +80,9 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
   }
 
   .hero-note {
-    font-size: 0.8125rem;
+    font: 0.75rem/1.5 var(--mono);
     color: var(--bone-dim);
     opacity: 0.75;
-    max-width: 34ch;
+    max-width: 36ch;
   }
 </style>

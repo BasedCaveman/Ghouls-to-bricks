@@ -48,18 +48,21 @@ p {
 }
 
 /* ---------------------------------------------------------------------
-   Design tokens — "Ghouls to Bricks"
-   Fundo cemitério + osso + 1 destaque (verde tóxico de ghoul).
+   Design tokens — "Brick My Ghoul"
+   Cypherpunk terminal: void black + phosphor green, one accent, sharp edges,
+   monospace UI chrome. Body copy stays in a readable sans for long-form text.
 --------------------------------------------------------------------- */
 
 :root {
-  --bg: #0b0d0a;
-  --bg-raised: #12150f;
-  --bone: #eef0e6;
-  --bone-dim: #b9bfb0;
-  --ghoul: #7cff5e;
-  --ghoul-dim: #3fa32c;
-  --line: #262b21;
+  --bg: #000000;
+  --bg-raised: #0a0d0a;
+  --bone: #eef4ef;
+  --bone-dim: #9fb0a3;
+  --ghoul: #39ff6a;
+  --ghoul-dim: #1c8f3c;
+  --line: #1c2620;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono",
+    monospace;
 
   --display: clamp(2.6rem, 5.4vw + 1rem, 5.2rem);
   --h2: clamp(1.9rem, 2.6vw + 1rem, 2.75rem);
@@ -68,13 +71,13 @@ p {
 
   --space-section: clamp(4rem, 8vw, 7rem);
   --space-block: clamp(1.5rem, 3vw, 2.5rem);
-  --radius: 10px;
+  --radius: 0px;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #0b0d0a;
-    --bg-raised: #12150f;
+    --bg: #000000;
+    --bg-raised: #0a0d0a;
   }
 }
 
@@ -83,13 +86,13 @@ body {
   color: var(--bone);
   background-image: radial-gradient(
       ellipse 900px 480px at 15% -10%,
-      rgba(124, 255, 94, 0.08),
+      rgba(57, 255, 106, 0.1),
       transparent 60%
     ),
     repeating-linear-gradient(
       0deg,
-      rgba(255, 255, 255, 0.015) 0px,
-      rgba(255, 255, 255, 0.015) 1px,
+      rgba(57, 255, 106, 0.02) 0px,
+      rgba(57, 255, 106, 0.02) 1px,
       transparent 1px,
       transparent 3px
     );
@@ -118,20 +121,17 @@ a {
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5em;
-  font: 700 0.8125rem/1 ui-monospace, "SFMono-Regular", Menlo, Consolas,
-    monospace;
-  letter-spacing: 0.08em;
+  gap: 0.6em;
+  font: 700 0.8125rem/1 var(--mono);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ghoul);
 }
 
 .eyebrow::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  background: var(--ghoul);
-  box-shadow: 0 0 0 3px rgba(124, 255, 94, 0.18);
+  content: "$";
+  font-family: var(--mono);
+  font-weight: 700;
 }
 
 h1,
@@ -152,7 +152,8 @@ p {
   gap: 0.6em;
   padding: 0.95em 1.6em;
   border-radius: var(--radius);
-  font: 700 1rem/1 system-ui, sans-serif;
+  font: 700 0.9375rem/1 var(--mono);
+  letter-spacing: 0.02em;
   text-decoration: none;
   min-height: 44px;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
@@ -160,23 +161,41 @@ p {
 
 .btn-primary {
   background: var(--ghoul);
-  color: #06180a;
-  box-shadow: 0 0 0 1px rgba(124, 255, 94, 0.4), 0 12px 32px -12px rgba(124, 255, 94, 0.55);
+  color: #011206;
+  box-shadow: 0 0 0 1px rgba(57, 255, 106, 0.5), 0 14px 34px -14px rgba(57, 255, 106, 0.65);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 0 1px rgba(124, 255, 94, 0.55), 0 18px 36px -12px rgba(124, 255, 94, 0.7);
+  box-shadow: 0 0 0 1px rgba(57, 255, 106, 0.7), 0 20px 38px -14px rgba(57, 255, 106, 0.8);
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--bone);
-  box-shadow: inset 0 0 0 1.5px var(--line);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .btn-ghost:hover {
-  box-shadow: inset 0 0 0 1.5px var(--ghoul-dim);
+  box-shadow: inset 0 0 0 1px var(--ghoul-dim);
+  color: var(--ghoul);
+}
+
+/* Terminal caret — blinking cursor used after headlines/prompts. */
+.caret {
+  display: inline-block;
+  width: 0.22em;
+  height: 0.78em;
+  margin-left: 0.1em;
+  background: currentColor;
+  vertical-align: -0.06em;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,26 +1,32 @@
 ---
 const features = [
   {
+    tag: "0x01",
     title: "3D build animation",
     body: "Watch your Ghoul rise layer by layer before you touch a single brick — replay it, skip it, share the clip.",
   },
   {
+    tag: "0x02",
     title: "Step-by-step manual",
     body: "One page per layer, flip through it in the browser or download the full PDF booklet.",
   },
   {
+    tag: "0x03",
     title: "Real parts, real checks",
     body: "Every colour maps to an actual LEGO® shade. 0 floating pieces, 0 collisions, balanced centre of mass — checked automatically.",
   },
   {
+    tag: "0x04",
     title: "Buy it two ways",
     body: "Export a LEGO Pick a Brick list or a BrickLink wanted-list XML — order straight from the source, nothing goes through this site.",
   },
   {
+    tag: "0x05",
     title: "Mini or XL",
     body: "1 pixel = 1 stud for a desk-sized bust, or 1 pixel = 2×2 studs for a display piece with real presence.",
   },
   {
+    tag: "0x06",
     title: "Nothing leaves your browser",
     body: "No upload, no server, no AI, nothing looked up. Your Ghoul is read and built on your own device.",
   },
@@ -29,12 +35,13 @@ const features = [
 
 <section class="features">
   <div class="wrap">
-    <p class="eyebrow">What you get</p>
+    <p class="eyebrow">what you get</p>
     <h2 class="features-title">Everything to actually build it</h2>
     <ul class="grid">
       {
         features.map((f) => (
           <li class="card">
+            <span class="tag">{f.tag}</span>
             <h3>{f.title}</h3>
             <p>{f.body}</p>
           </li>
@@ -64,8 +71,6 @@ const features = [
     grid-template-columns: repeat(3, 1fr);
     background: var(--line);
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    overflow: clip;
   }
 
   .card {
@@ -74,6 +79,12 @@ const features = [
     display: grid;
     gap: 0.5rem;
     align-content: start;
+  }
+
+  .tag {
+    font: 700 0.75rem/1 var(--mono);
+    color: var(--ghoul);
+    opacity: 0.8;
   }
 
   .card h3 {
