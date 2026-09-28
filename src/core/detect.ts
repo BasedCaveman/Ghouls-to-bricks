@@ -1,8 +1,8 @@
 // Find a Ghoul pixel-art grid inside any image: the original image, an
 // upscaled copy, a JPEG, or a screenshot with other things around it (e.g. an
 // OpenSea page). No fixed token list: this works on any pixel-art figure.
-import { COLOR_BY_ID, quantizeGrid } from './palette';
-import { hexToRgb, rgbToLab, type RGB } from './color';
+import { BLACK, COLOR_BY_ID, matchColor, quantizeGrid } from './palette';
+import { deltaE, hexToRgb, rgbToLab, type Lab, type RGB } from './color';
 
 export interface RGBAImage { width: number; height: number; data: Uint8ClampedArray | Uint8Array }
 
@@ -100,7 +100,7 @@ function sampleGrid(img: RGBAImage, N: number): { w: number; h: number; rgb: (RG
 /**
  * Figure vs. backdrop: flood fill from the border, comparing every cell with the
  * backdrop colour itself (not with its neighbour, which lets a dark gradient
- * leak into the figure). Dark areas inside the figure are then closed so they
+ * leak into the figure). Holes inside the figure are then filled so they
  * stay figure (black pieces), never holes.
  */
 function autoMask(rgb: (RGB | null)[][]): boolean[][] {
@@ -132,24 +132,18 @@ function autoMask(rgb: (RGB | null)[][]): boolean[][] {
       const j = idx(nx, ny); if (!bg[j] && isBack(j)) { bg[j] = 1; st.push(j); }
     }
   }
-  // close the figure (dilate then erode, 5×5) so thin dark gaps and inlets inside it fill in
-  let fig = new Uint8Array(w * h).map((_, i) => 1 - bg[i]);
-  const morph = (src: Uint8Array, grow: boolean) => {
-    const out = new Uint8Array(w * h);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      let hit = grow ? 0 : 1;
-      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
-        const nx = x + dx, ny = y + dy;
-        const v = nx < 0 || ny < 0 || nx >= w || ny >= h ? 0 : src[idx(nx, ny)];
-        if (grow) { if (v) hit = 1; } else if (!v) hit = 0;
-      }
-      out[idx(x, y)] = hit;
+  // backdrop cells cut off from the border (8-connected) are holes inside the figure: they become figure (black pieces).
+  // An opening between the figure and a detail (smoke, a hand) stays backdrop.
+  const outside = new Uint8Array(w * h), q2: number[] = [];
+  for (const i of border) if (bg[i] && !outside[i]) { outside[i] = 1; q2.push(i); }
+  while (q2.length) {
+    const i = q2.pop()!, x = i % w, y = (i / w) | 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+      const j = idx(nx, ny); if (bg[j] && !outside[j]) { outside[j] = 1; q2.push(j); }
     }
-    return out;
-  };
-  const closed = morph(morph(fig, true), false);
-  const dark = (i: number) => { const l = labOf((i / w) | 0, i % w); return !l || l[0] < 22; };   // only near-black gaps become figure
-  fig = fig.map((v, i) => (v || (closed[i] && dark(i)) ? 1 : 0));
+  }
+  const fig = new Uint8Array(w * h).map((_, i) => (outside[i] ? 0 : 1));
   const mask: boolean[][] = [];
   for (let y = 0; y < h; y++) { const row: boolean[] = []; for (let x = 0; x < w; x++) row.push(!!fig[idx(x, y)]); mask.push(row); }
   return mask;
@@ -195,6 +189,84 @@ function crop(img: RGBAImage, x0: number, y0: number, size: number): RGBAImage {
   return { width: s, height: s, data };
 }
 
+/**
+ * Pixel-art Ghouls shade a flat colour with small random variations. Mapping
+ * each pixel on its own scatters those across neighbouring brick colours
+ * (a grey head turns into black-and-grey noise). Instead: group the figure's
+ * colours, fold lone specks into their surroundings, and pick one brick colour
+ * per group, keeping the main body off black so it reads against black parts.
+ */
+const NEUTRALS = new Set([1, 11, 85, 86, 99]);
+function simplifyFigure(rgb: (RGB | null)[][], mask: boolean[][]): (RGB | null)[][] {
+  const h = rgb.length, w = rgb[0].length;
+  const pts: { y: number; x: number; lab: Lab }[] = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y][x] && rgb[y][x]) pts.push({ y, x, lab: rgbToLab(rgb[y][x]!) });
+  if (pts.length < 4) return rgb;
+  // k-means in Lab, farthest-point seeds
+  const K = Math.min(10, pts.length);
+  let cs: Lab[] = [pts[0].lab];
+  while (cs.length < K) {
+    let far = pts[0].lab, fd = -1;
+    for (const p of pts) { const d = Math.min(...cs.map(c => deltaE(p.lab, c))); if (d > fd) { fd = d; far = p.lab; } }
+    if (fd < 1) break; cs.push(far);
+  }
+  let lab = new Int32Array(pts.length);
+  const assign = () => pts.forEach((p, i) => { let b = 0, bd = Infinity; cs.forEach((c, k) => { const d = deltaE(p.lab, c); if (d < bd) { bd = d; b = k; } }); lab[i] = b; });
+  const update = () => {
+    const sum = cs.map(() => [0, 0, 0, 0]);
+    pts.forEach((p, i) => { const s = sum[lab[i]]; s[0] += p.lab[0]; s[1] += p.lab[1]; s[2] += p.lab[2]; s[3]++; });
+    const keep: Lab[] = [], remap = new Map<number, number>();
+    sum.forEach((s, k) => { if (s[3]) { remap.set(k, keep.length); keep.push([s[0] / s[3], s[1] / s[3], s[2] / s[3]]); } });
+    lab = lab.map(k => remap.get(k)!); cs = keep;
+  };
+  for (let it = 0; it < 12; it++) { assign(); update(); }
+  // merge groups closer than MERGE (their variation is shading noise, not a detail)
+  const MERGE = 9;
+  for (;;) {
+    const n = cs.map((_, k) => lab.filter(v => v === k).length);
+    let bi = -1, bj = -1, bd = MERGE;
+    for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) { const d = deltaE(cs[i], cs[j]); if (d < bd) { bd = d; bi = i; bj = j; } }
+    if (bi < 0) break;
+    const t = n[bi] + n[bj];
+    cs[bi] = [0, 1, 2].map(c => (cs[bi][c] * n[bi] + cs[bj][c] * n[bj]) / t) as Lab;
+    lab = lab.map(k => (k === bj ? bi : k > bj ? k - 1 : k)); cs.splice(bj, 1);
+  }
+  // fold lone specks into the group around them (not strong details: eyes, tears, a cigar tip)
+  const grid: number[][] = rgb.map(r => r.map(() => -1));
+  pts.forEach((p, i) => { grid[p.y][p.x] = lab[i]; });
+  for (let pass = 0; pass < 2; pass++) {
+    const next = grid.map(r => r.slice());
+    for (const p of pts) {
+      const own = grid[p.y][p.x], cnt = new Map<number, number>(); let same = 0, tot = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue; const v = grid[p.y + dy]?.[p.x + dx]; if (v === undefined || v < 0) continue;
+        tot++; if (v === own) same++; else cnt.set(v, (cnt.get(v) ?? 0) + 1);
+      }
+      if (same > 0 || tot < 5) continue;
+      const [maj, mc] = [...cnt].sort((a, b) => b[1] - a[1])[0];
+      if (mc >= 4 && deltaE(cs[own], cs[maj]) < 24) next[p.y][p.x] = maj;
+    }
+    for (const p of pts) grid[p.y][p.x] = next[p.y][p.x];
+  }
+  // one brick colour per group; the main body never goes to black (black is for the darker parts around it)
+  const counts = cs.map((_, k) => pts.filter(p => grid[p.y][p.x] === k).length);
+  const main = counts.indexOf(Math.max(...counts));
+  const meanRgb = cs.map((_, k) => {
+    const ps = pts.filter(p => grid[p.y][p.x] === k), s = [0, 0, 0];
+    ps.forEach(p => { const v = rgb[p.y][p.x]!; s[0] += v[0]; s[1] += v[1]; s[2] += v[2]; });
+    return s.map(v => Math.round(v / Math.max(1, ps.length))) as RGB;
+  });
+  const pick = cs.map((c, k) => {
+    const rgbC = meanRgb[k];
+    const grey = Math.hypot(c[1], c[2]) < 12;
+    const ok = (id: number) => (!grey || NEUTRALS.has(id)) && !(k === main && c[0] > 12 && id === BLACK);
+    return matchColor(rgbC, ok);
+  });
+  const out = rgb.map(r => r.slice());
+  for (const p of pts) out[p.y][p.x] = hexToRgb(COLOR_BY_ID.get(pick[grid[p.y][p.x]])!.hex);
+  return out;
+}
+
 export interface DetectOptions { gridSize?: number; maxColors?: number }
 
 /** Ghoul (or any pixel-art figure) as a colour grid, ready for building. */
@@ -211,7 +283,7 @@ export function detectGhoul(img: RGBAImage, opts: DetectOptions = {}): GhoulGrid
   const filled = rgb.flat().filter(Boolean).length;
   if (filled < 4) throw new DetectError('empty', "We found a grid, but it's almost empty. Is this really a Ghoul?");
   const mask = autoMask(rgb);
-  const q = quantizeGrid(rgb, opts.maxColors ?? 24);
+  const q = quantizeGrid(simplifyFigure(rgb, mask), opts.maxColors ?? 24);
   const colorIndex = new Map<number, number>();
   const colors: { rgb: RGB; count: number; brick: number }[] = [];
   const cells: number[][] = [];

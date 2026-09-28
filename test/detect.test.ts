@@ -50,6 +50,21 @@ describe('grid detection', () => {
     for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (inHead(x, y) && (x - 15.5) ** 2 / 100 + (y - 14) ** 2 / 100 <= 0.8) { inside++; if (g.mask[y][x]) kept++; }
     expect(kept).toBe(inside);
   });
+  it('builds a noisy grey head in one grey, and keeps the gap to a nearby detail open', () => {
+    const img = blank(32, 32, [0, 0, 0, 255]);
+    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const inHead = (x: number, y: number) => (x - 13) ** 2 + (y - 15) ** 2 <= 64;
+    for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
+      if (inHead(x, y)) { const v = 62 + Math.round((rnd() - 0.5) * 16); img.data.set([v + Math.round((rnd() - 0.5) * 10), v, v + Math.round((rnd() - 0.5) * 10), 255], (y * 32 + x) * 4); }
+      if (x === 25 && y >= 6 && y <= 24) img.data.set([70, 70, 70, 255], (y * 32 + x) * 4);   // smoke, 3 cells right of the head
+    }
+    const g = detectGhoul(img);
+    for (let y = 10; y <= 20; y++) expect(g.mask[y][23]).toBe(false);
+    const ids = new Map<number, number>(); let n = 0;
+    for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (inHead(x, y)) { n++; const b = g.colors[g.cells[y][x]].brick; ids.set(b, (ids.get(b) ?? 0) + 1); }
+    expect(Math.max(...ids.values()) / n).toBeGreaterThan(0.9);
+    expect([...ids].sort((a, b) => b[1] - a[1])[0][0]).toBe(85);   // Dark Bluish Gray, not black
+  });
   it('uses only real brick colours', () => {
     const g = detectGhoul(figureImage(SKULL, 4));
     expect(g.colors.every(c => c.brick > 0)).toBe(true);
