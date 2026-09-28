@@ -74,7 +74,7 @@ function ghoulCanvas(g: GhoulGrid, size: number) {
   return c;
 }
 
-export interface PageOptions { label: string; renderSize?: number }
+export interface PageOptions { label: string; renderSize?: number; maker?: PageMaker }
 
 /**
  * Draws any page of the booklet on demand: 1 = cover, 2..steps+1 = one page
@@ -169,13 +169,14 @@ export class PageMaker {
  * which pages are drawn (e.g. a sample for the video).
  */
 export async function drawPages(m: Model, grid: GhoulGrid, o: PageOptions, use: (page: HTMLCanvasElement, n: number, total: number) => void | Promise<void>, pick: (n: number, total: number) => boolean = () => true): Promise<number> {
-  const pm = new PageMaker(m, grid, o);
+  const pm = o.maker ?? new PageMaker(m, grid, o);
+  try {
   for (let n = 1; n <= pm.total; n++) {
     if (!pick(n, pm.total)) continue;
     await use(pm.page(n), n, pm.total);
     await new Promise(res => setTimeout(res, 0));
   }
-  pm.dispose();
+  } finally { if (!o.maker) pm.dispose(); }
   return pm.total;
 }
 

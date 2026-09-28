@@ -37,7 +37,7 @@ export class StepRenderer {
     const s = this.scale;
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x2a1a33, 1.4));
     const sun = new THREE.DirectionalLight(0xffffff, 2.4);
-    sun.position.set(36 * s, 80 * s, 52 * s); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+    sun.position.set(36 * s, 80 * s, 52 * s); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
     Object.assign(sun.shadow.camera, { left: -40 * s, right: 40 * s, top: 50 * s, bottom: -20 * s, near: 1, far: 260 * s });
     sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.02;
     this.scene.add(sun);
