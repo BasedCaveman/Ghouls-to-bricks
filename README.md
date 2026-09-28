@@ -32,7 +32,7 @@ The figures in `test/fixtures` are drawn procedurally and only used by the tests
 
 Unofficial fan project · Not affiliated with, sponsored or endorsed by the LEGO Group, BrickLink or the Ghouls project. LEGO® is a trademark of the LEGO Group. Parts data: Rebrickable. No purchases, payments or personal data go through this site. Models are computer-checked, not physically build-tested.
 
-Based on Punk to Bricks by John Karp · NFT Morning.
+Made by pedr0x.eth · Tips welcome at pedr0x.eth. Based on Punk to Bricks by John Karp (MIT).
 
 ## License
 
