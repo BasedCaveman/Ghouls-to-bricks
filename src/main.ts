@@ -146,7 +146,23 @@ $('ghoulno').addEventListener('input', () => viewer.setLabel(plateLabel()));  //
 // ---------- exports ----------
 const current = () => models.get(mkey(size)) ?? null;
 const baseName = () => `${plateLabel() ? 'ghoul-' + plateLabel().slice(1) : 'my-ghoul'}-${size}-${mode}`;
+/** After a long job the browser (iOS/Android especially) no longer treats a scripted click as a user gesture and drops the download, so ask for a fresh tap. */
 function save(blob: Blob, name: string) {
+  if (navigator.userActivation && !navigator.userActivation.isActive) { offerSave(blob, name); return; }
+  saveNow(blob, name);
+}
+function offerSave(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const box = $('progress'); box.hidden = false;
+  $('bar').style.width = '100%';
+  const t = $('progress-text'); t.textContent = '';
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.textContent = `Tap to save ${name}`; a.style.cssText = 'color:inherit;text-decoration:underline;font-weight:700';
+  a.addEventListener('click', () => setTimeout(() => { box.hidden = true; URL.revokeObjectURL(url); }, 4000));
+  t.append(a);
+  setTimeout(() => { if (!box.hidden && t.contains(a)) { box.hidden = true; } }, 120_000);
+}
+function saveNow(blob: Blob, name: string) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = name;
   document.body.append(a); a.click(); a.remove();
@@ -162,7 +178,7 @@ async function run(label: string, job: () => Promise<void>) {
   if (exporting || !current()) return;
   exporting = true;
   busyButtons().forEach(b => { b.disabled = true; });
-  try { await job(); progress(null); }
+  try { await job(); if (!$('progress-text').querySelector('a')) progress(null); }
   catch (e) { console.error(e); progress(`${label} failed: ${(e as Error).message || e}. Try again, or use Mini size.`, 0); setTimeout(() => progress(null), 15000); }
   finally { exporting = false; busyButtons().forEach(b => { b.disabled = false; }); }
 }
