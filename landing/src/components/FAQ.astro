@@ -10,7 +10,7 @@ const faqs = [
   },
   {
     q: "Is this an official Based Ghouls product?",
-    a: "No — Ghouls to Bricks is a free, open-source, unofficial fan project. It's not affiliated with, sponsored or endorsed by the Based Ghouls project, BrickLink or the LEGO Group. It sells nothing and earns nothing from your order: no affiliate links, no commission.",
+    a: "No — Brick My Ghoul is a free, open-source, unofficial fan project built on the Ghouls to Bricks engine. It's not affiliated with, sponsored or endorsed by the Based Ghouls project, BrickLink or the LEGO Group. It sells nothing and earns nothing from your order: no affiliate links, no commission.",
   },
   {
     q: "How do I actually get the bricks?",
@@ -21,7 +21,7 @@ const faqs = [
 
 <section class="faq">
   <div class="wrap wrap-narrow">
-    <p class="eyebrow">Before you summon one</p>
+    <p class="eyebrow">before you summon one</p>
     <h2 class="faq-title">Questions</h2>
     <div class="list">
       {
@@ -78,15 +78,15 @@ const faqs = [
   }
 
   .item summary::after {
-    content: "+";
+    content: "[+]";
+    font-family: var(--mono);
     color: var(--ghoul);
-    font-size: 1.25rem;
+    font-size: 0.875rem;
     flex: none;
-    transition: transform 0.15s ease;
   }
 
   .item[open] summary::after {
-    transform: rotate(45deg);
+    content: "[-]";
   }
 
   .item p {

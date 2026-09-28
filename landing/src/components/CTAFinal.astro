@@ -6,9 +6,9 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
 <section class="cta">
   <div class="wrap cta-inner">
     <div class="cta-mark" aria-hidden="true"><SkullMark /></div>
-    <h2>Your Ghoul is waiting to be reforged.</h2>
-    <p>Free, instant, and it never leaves your browser.</p>
-    <a class="btn btn-primary" href={APP_URL}>Build my Ghoul →</a>
+    <h2>Your Ghoul is waiting to be bricked.</h2>
+    <p class="cta-sub">Free, instant, and it never leaves your browser.</p>
+    <a class="btn btn-primary" href={APP_URL}>./build-my-ghoul</a>
   </div>
 </section>
 
@@ -26,8 +26,8 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
   }
 
   .cta-mark {
-    width: 34px;
-    aspect-ratio: 1 / 1;
+    width: 30px;
+    aspect-ratio: 22 / 26;
     color: var(--ghoul);
     margin-bottom: 0.5rem;
   }
@@ -37,7 +37,8 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
     max-width: 24ch;
   }
 
-  .cta p {
+  .cta-sub {
+    font: 0.9375rem/1.5 var(--mono);
     color: var(--bone-dim);
     margin-bottom: 0.5rem;
   }

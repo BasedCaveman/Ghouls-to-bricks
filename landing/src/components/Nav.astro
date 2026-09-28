@@ -7,9 +7,9 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
   <div class="wrap nav-inner">
     <a class="brand" href="#top">
       <span class="brand-mark" aria-hidden="true"><SkullMark /></span>
-      <span>Ghouls to Bricks</span>
+      <span class="brand-text">brick_my_ghoul</span>
     </a>
-    <a class="btn btn-primary nav-cta" href={APP_URL}>Build my Ghoul</a>
+    <a class="btn btn-primary nav-cta" href={APP_URL}>build my ghoul</a>
   </div>
 </header>
 
@@ -18,15 +18,17 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
     position: sticky;
     top: 0;
     z-index: 10;
-    background: color-mix(in oklab, var(--bg) 88%, transparent);
+    background: color-mix(in oklab, var(--bg) 90%, transparent);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--line);
   }
 
   .nav-inner {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    gap: 0.6rem 1rem;
     padding-block: 0.9rem;
   }
 
@@ -34,21 +36,26 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    font: 800 1.05rem/1 system-ui, sans-serif;
     text-decoration: none;
     color: var(--bone);
   }
 
+  .brand-text {
+    font: 700 0.95rem/1 var(--mono);
+    letter-spacing: 0.01em;
+  }
+
   .brand-mark {
     display: inline-flex;
-    width: 22px;
-    aspect-ratio: 1 / 1;
+    width: 20px;
+    aspect-ratio: 22 / 26;
     color: var(--ghoul);
     flex: none;
   }
 
   .nav-cta {
     padding: 0.6em 1.1em;
-    font-size: 0.9rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
   }
 </style>
