@@ -6,7 +6,7 @@ import { COLOR_BY_ID, renderHex } from '../core/palette';
 import { geoKey, pieceGeometry } from './geometry';
 import { buildCamera, makeTimeline, pieceState, PL, type Timeline } from './timeline';
 
-export const SKY = new THREE.Color('#B4DBF1');
+export const SKY = new THREE.Color('#170a20');
 const MAX_GHOSTS = 96;
 const GHOST_ALPHA = [0.32, 0.18, 0.08];
 
@@ -45,14 +45,14 @@ export class Viewer {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.scene.background = SKY;
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.4));
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x2a1a33, 1.4));
     this.sun = new THREE.DirectionalLight(0xffffff, 2.4);
     this.sun.castShadow = true;
     this.sun.shadow.mapSize.set(opts.lowPoly ? 1024 : 2048, opts.lowPoly ? 1024 : 2048);
     this.sun.shadow.bias = -0.0008; this.sun.shadow.normalBias = 0.02; this.sun.shadow.radius = 3;
     this.scene.add(this.sun, this.sun.target);
-    const fill = new THREE.DirectionalLight(0xbfd4ff, 0.8); fill.position.set(-25, 12, 10); this.scene.add(fill);
-    this.floor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.ShadowMaterial({ opacity: 0.32, color: 0x1f4a6b }));
+    const fill = new THREE.DirectionalLight(0xcbb3ff, 0.8); fill.position.set(-25, 12, 10); this.scene.add(fill);
+    this.floor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.ShadowMaterial({ opacity: 0.4, color: 0x2a1440 }));
     this.floor.rotation.x = -Math.PI / 2; this.floor.receiveShadow = true;
     this.scene.add(this.floor, this.root);
     this.controls = new OrbitControls(this.camera, canvas);
