@@ -49,18 +49,18 @@ p {
 
 /* ---------------------------------------------------------------------
    Design tokens — "Brick My Ghoul"
-   Cypherpunk terminal: void black + phosphor green, one accent, sharp edges,
+   Cypherpunk terminal: void black + neon purple, one accent, sharp edges,
    monospace UI chrome. Body copy stays in a readable sans for long-form text.
 --------------------------------------------------------------------- */
 
 :root {
   --bg: #000000;
-  --bg-raised: #0a0d0a;
-  --bone: #eef4ef;
-  --bone-dim: #9fb0a3;
-  --ghoul: #39ff6a;
-  --ghoul-dim: #1c8f3c;
-  --line: #1c2620;
+  --bg-raised: #0d0812;
+  --bone: #f3eef8;
+  --bone-dim: #ab9fb8;
+  --ghoul: #bf40ff;
+  --ghoul-dim: #6b1f96;
+  --line: #241c2c;
   --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono",
     monospace;
 
@@ -77,7 +77,7 @@ p {
 @media (prefers-color-scheme: light) {
   :root {
     --bg: #000000;
-    --bg-raised: #0a0d0a;
+    --bg-raised: #0d0812;
   }
 }
 
@@ -86,13 +86,13 @@ body {
   color: var(--bone);
   background-image: radial-gradient(
       ellipse 900px 480px at 15% -10%,
-      rgba(57, 255, 106, 0.1),
+      rgba(191, 64, 255, 0.12),
       transparent 60%
     ),
     repeating-linear-gradient(
       0deg,
-      rgba(57, 255, 106, 0.02) 0px,
-      rgba(57, 255, 106, 0.02) 1px,
+      rgba(191, 64, 255, 0.025) 0px,
+      rgba(191, 64, 255, 0.025) 1px,
       transparent 1px,
       transparent 3px
     );
@@ -100,7 +100,7 @@ body {
 
 ::selection {
   background: var(--ghoul);
-  color: #05170a;
+  color: #0a0014;
 }
 
 a {
@@ -161,13 +161,13 @@ p {
 
 .btn-primary {
   background: var(--ghoul);
-  color: #011206;
-  box-shadow: 0 0 0 1px rgba(57, 255, 106, 0.5), 0 14px 34px -14px rgba(57, 255, 106, 0.65);
+  color: #0a0014;
+  box-shadow: 0 0 0 1px rgba(191, 64, 255, 0.5), 0 14px 34px -14px rgba(191, 64, 255, 0.65);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 0 1px rgba(57, 255, 106, 0.7), 0 20px 38px -14px rgba(57, 255, 106, 0.8);
+  box-shadow: 0 0 0 1px rgba(191, 64, 255, 0.7), 0 20px 38px -14px rgba(191, 64, 255, 0.8);
 }
 
 .btn-ghost {
