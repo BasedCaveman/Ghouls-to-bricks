@@ -4,7 +4,7 @@ import { PNG } from 'pngjs';
 import jpeg from 'jpeg-js';
 import { hexToRgb } from '../src/core/color';
 import type { RGBAImage } from '../src/core/detect';
-import type { TestPunk } from './fixtures/punks';
+import type { TestFigure } from './fixtures/ghouls';
 
 export function blank(width: number, height: number, rgba: [number, number, number, number] = [255, 255, 255, 255]): RGBAImage {
   const data = new Uint8ClampedArray(width * height * 4);
@@ -12,10 +12,10 @@ export function blank(width: number, height: number, rgba: [number, number, numb
   return { width, height, data };
 }
 
-/** The Punk at `scale` pixels per cell. `transparentBg` leaves the background out. */
-export function punkImage(p: TestPunk, scale = 1, transparentBg = false): RGBAImage {
-  const img = blank(24 * scale, 24 * scale, [0, 0, 0, 0]);
-  for (let r = 0; r < 24; r++) for (let c = 0; c < 24; c++) {
+/** The figure at `scale` pixels per cell. `transparentBg` leaves the background out. */
+export function figureImage(p: TestFigure, scale = 1, transparentBg = false): RGBAImage {
+  const img = blank(p.size * scale, p.size * scale, [0, 0, 0, 0]);
+  for (let r = 0; r < p.size; r++) for (let c = 0; c < p.size; c++) {
     const ch = p.rows[r][c];
     if (ch === '.' && transparentBg) continue;
     const hex = p.palette[ch];
@@ -54,14 +54,14 @@ export function rect(img: RGBAImage, x0: number, y0: number, w: number, h: numbe
   for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) img.data.set([...rgb, 255], (y * img.width + x) * 4);
 }
 
-/** A fake marketplace screenshot: page chrome, text-like noise, the Punk scaled by a non-integer factor. */
-export function screenshot(p: TestPunk, size = 517, W = 1170, H = 1600): RGBAImage {
+/** A fake marketplace screenshot: page chrome, text-like noise, the figure scaled by a non-integer factor. */
+export function screenshot(p: TestFigure, size = 517, W = 1170, H = 1600): RGBAImage {
   const img = blank(W, H, [246, 247, 249, 255]);
   rect(img, 0, 0, W, 120, [32, 34, 40]);
   let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   for (let i = 0; i < 400; i++) rect(img, 60 + Math.floor(rnd() * (W - 200)), 900 + Math.floor(rnd() * 600), 4 + Math.floor(rnd() * 14), 18, [40, 40, 40]);
   for (let i = 0; i < 40; i++) rect(img, 20 + Math.floor(rnd() * 1000), 30 + Math.floor(rnd() * 60), 10, 14, [220, 220, 220]);
-  paste(img, resize(punkImage(p, 24), size, size), 120, 200);
+  paste(img, resize(figureImage(p, 16), size, size), 120, 200);
   return img;
 }
 

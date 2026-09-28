@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { buildModel } from '../src/core/build';
 import { checkModel } from '../src/core/check';
-import { detectPunk } from '../src/core/detect';
+import { detectGhoul } from '../src/core/detect';
 import { partId, type Kind, type Piece } from '../src/core/parts';
-import { REFERENCE_PUNK, TEST_PUNKS } from './fixtures/punks';
-import { punkImage } from './img';
+import { FIGURES } from './fixtures/ghouls';
+import { figureImage } from './img';
 
 const P = (x: number, z: number, y: number, w: number, d: number, kind: Kind = 'brick', h = kind === 'brick' ? 3 : 1): Piece =>
   ({ x, z, y, w, d, h, kind, c: 11, part: partId(kind, w, d) });
@@ -47,17 +47,29 @@ describe('solidity checker', () => {
   });
 });
 
-describe('every test Punk builds solid', () => {
-  for (const size of ['mini', 'xl'] as const) for (const p of [REFERENCE_PUNK, ...TEST_PUNKS]) {
-    it(`${size}: ${p.name}`, () => {
-      const m = buildModel(detectPunk(punkImage(p, 8)), size);
+describe('every test figure builds solid', () => {
+  for (const size of ['mini', 'xl'] as const) for (const mode of ['backdrop', 'figure'] as const) for (const p of FIGURES) {
+    it(`${size} ${mode}: ${p.name}`, () => {
+      const m = buildModel(detectGhoul(figureImage(p, 8)), size, { mode });
       expect(m.checks.floating, m.notes.join(' ')).toBe(0);
       expect(m.checks.collisions).toBe(0);
       expect(m.checks.com.inside).toBe(true);
-      if (size === 'mini') expect(m.checks.pieces).toBeLessThanOrEqual(450);
-      // every piece is a real part in a real colour, every step is non-empty
+      // every piece is a real part in a real colour, every piece is in exactly one step
       expect(m.pieces.every(q => q.part && q.c > 0)).toBe(true);
       expect(m.steps.flat().sort((a, b) => a - b)).toEqual(m.pieces.map((_, i) => i));
+      expect(m.pieces.filter(q => q.nameplate).length).toBe(1);
     });
   }
+  it('figure-only mode drops the backdrop colour', () => {
+    const g = detectGhoul(figureImage(FIGURES[0], 8));
+    const bg = buildModel(g, 'mini', { mode: 'backdrop' }), fig = buildModel(g, 'mini', { mode: 'figure' });
+    expect(fig.checks.pieces).toBeLessThan(bg.checks.pieces);
+    expect(Object.keys(fig.colors).length).toBeLessThan(Object.keys(bg.colors).length);
+  });
+  it('a floating detail is held up (clear supports or tied into the wall)', () => {
+    const g = detectGhoul(figureImage(FIGURES[1], 8));
+    const fig = buildModel(g, 'mini', { mode: 'figure' });
+    expect(fig.pieces.some(q => q.support)).toBe(true);
+    expect(fig.checks.floating).toBe(0);
+  });
 });

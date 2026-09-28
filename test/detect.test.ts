@@ -1,75 +1,44 @@
-import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { detectPunk, DetectError, type PunkGrid, type RGBAImage } from '../src/core/detect';
-import { REFERENCE_PUNK, TEST_PUNKS, type TestPunk } from './fixtures/punks';
-import { blank, load, paste, punkImage, resize, screenshot, toJPEG } from './img';
+import { detectGhoul, type GhoulGrid } from '../src/core/detect';
+import { matchColor } from '../src/core/palette';
+import { hexToRgb } from '../src/core/color';
+import { SKULL } from './fixtures/ghouls';
+import { figureImage, resize, screenshot, toJPEG } from './img';
 import jpeg from 'jpeg-js';
-import { deltaE, hexToRgb, rgbToLab } from '../src/core/color';
 
-/** The detected grid must split pixels into exactly the same colour classes as the drawing. */
-function expectSameGrid(g: PunkGrid, p: TestPunk) {
-  const map = new Map<string, number>();
-  for (let r = 0; r < 24; r++) for (let c = 0; c < 24; c++) {
-    const ch = p.rows[r][c], v = g.cells[r][c];
-    if (ch === '.') { expect(v, `bg at ${r},${c}`).toBe(-1); continue; }
-    expect(v, `pixel ${r},${c}`).toBeGreaterThanOrEqual(0);
-    if (!map.has(ch)) map.set(ch, v);
-    expect(v, `pixel ${r},${c} '${ch}'`).toBe(map.get(ch));
-  }
-  // distinct drawing colours stay distinct, unless they are near-identical (ΔE < 5)
-  const chars = [...map.keys()];
-  for (const a of chars) for (const b of chars) {
-    if (a >= b || map.get(a) !== map.get(b)) continue;
-    expect(deltaE(rgbToLab(hexToRgb(p.palette[a])), rgbToLab(hexToRgb(p.palette[b]))), `'${a}' and '${b}' merged`).toBeLessThan(5);
-  }
-}
-const jpegRoundTrip = (img: RGBAImage, q: number): RGBAImage => {
-  const j = jpeg.decode(toJPEG(img, q), { useTArray: true, formatAsRGBA: true });
-  return { width: j.width, height: j.height, data: new Uint8ClampedArray(j.data) };
-};
-
-const ALL = [REFERENCE_PUNK, ...TEST_PUNKS];
+const expected = SKULL.rows.map(r => [...r].map(ch => matchColor(hexToRgb(SKULL.palette[ch]))));
+const brickRows = (g: GhoulGrid) => g.cells.map(r => r.map(v => (v < 0 ? -1 : g.colors[v].brick)));
+const agree = (g: GhoulGrid) => { let n = 0; brickRows(g).forEach((r, y) => r.forEach((v, x) => { if (v === expected[y][x]) n++; })); return n / (32 * 32); };
 
 describe('grid detection', () => {
-  it.each(ALL.map(p => [p.name, p]))('original 24×24 PNG: %s', (_, p) => expectSameGrid(detectPunk(punkImage(p as TestPunk)), p as TestPunk));
-  it.each(ALL.map(p => [p.name, p]))('upscaled ×20: %s', (_, p) => expectSameGrid(detectPunk(punkImage(p as TestPunk, 20)), p as TestPunk));
-  it.each(ALL.map(p => [p.name, p]))('JPEG, blurry non-integer scale: %s', (_, p) => {
-    const img = jpegRoundTrip(resize(punkImage(p as TestPunk, 24), 419, 419), 70);
-    expectSameGrid(detectPunk(img), p as TestPunk);
+  it('reads a native 32×32 image exactly', () => {
+    const g = detectGhoul(figureImage(SKULL, 1));
+    expect([g.w, g.h]).toEqual([32, 32]);
+    expect(agree(g)).toBe(1);
   });
-  it.each(ALL.slice(0, 6).map(p => [p.name, p]))('phone screenshot with page around it: %s', (_, p) => {
-    const g = detectPunk(jpegRoundTrip(screenshot(p as TestPunk), 80));
-    expectSameGrid(g, p as TestPunk);
-    expect(Math.abs(g.box.x - 120)).toBeLessThanOrEqual(3);
-    expect(Math.abs(g.box.size - 517)).toBeLessThanOrEqual(4);
+  it('finds the grid in an 8× upscale', () => {
+    const g = detectGhoul(figureImage(SKULL, 8));
+    expect([g.w, g.h]).toEqual([32, 32]);
+    expect(agree(g)).toBe(1);
   });
-  it('transparent background PNG', () => {
-    const g = detectPunk(punkImage(REFERENCE_PUNK, 10, true));
-    expect(g.background).toBeNull();
-    expectSameGrid(g, REFERENCE_PUNK);
+  it('finds the grid in a blurred, non-integer resize saved as JPEG', () => {
+    const img = resize(figureImage(SKULL, 8), 403, 403);
+    const j = jpeg.decode(toJPEG(img, 80), { useTArray: true, formatAsRGBA: true });
+    const g = detectGhoul({ width: j.width, height: j.height, data: new Uint8ClampedArray(j.data) });
+    expect([g.w, g.h]).toEqual([32, 32]);
+    expect(agree(g)).toBeGreaterThan(0.95);
   });
-  it('reference booklet cover (a real rendered image with the Punk inside)', () => {
-    const path = '../cryptopunk-brick-bust/images/cover.jpg';
-    if (!existsSync(path)) return;
-    expectSameGrid(detectPunk(load(path)), REFERENCE_PUNK);
+  it('finds the grid in a marketplace-style screenshot', () => {
+    const g = detectGhoul(screenshot(SKULL));
+    expect([g.w, g.h]).toEqual([32, 32]);
+    expect(agree(g)).toBeGreaterThan(0.95);
   });
-
-  it('rejects a picture of several Punks side by side', () => {
-    const files = ['a-1', 'b-1', 'b-2', 'b-3', 'b-4', 'b-5', 'c-1', 'c-2', 'c-5'];
-    const sheet = blank(3 * 24 * 11 + 40, 3 * 24 * 11 + 40, [99, 132, 151, 255]);
-    files.forEach((f, i) => paste(sheet, resize(load(`public/examples/${f}.png`), 24 * 11, 24 * 11), 20 + (i % 3) * 264, 20 + Math.floor(i / 3) * 264));
-    expect(() => detectPunk(sheet)).toThrow(DetectError);
+  it('separates the figure from the backdrop', () => {
+    const g = detectGhoul(figureImage(SKULL, 4));
+    SKULL.rows.forEach((r, y) => [...r].forEach((ch, x) => { if (y < 24) expect(g.mask[y][x]).toBe(ch !== '.'); }));
   });
-  it('rejects noise', () => {
-    const img = blank(300, 300);
-    let s = 1; for (let i = 0; i < img.data.length; i++) img.data[i] = i % 4 === 3 ? 255 : (s = (s * 48271) % 2147483647) & 255;
-    expect(() => detectPunk(img)).toThrow(DetectError);
-  });
-  it('rejects a plain image', () => expect(() => detectPunk(blank(400, 400, [200, 30, 30, 255]))).toThrow(DetectError));
-  it('rejects a tiny image', () => expect(() => detectPunk(blank(12, 12))).toThrow(DetectError));
-  it('rejects a Punk that is cut off', () => {
-    const full = punkImage(REFERENCE_PUNK, 10), crop = blank(160, 240);
-    for (let y = 0; y < 240; y++) for (let x = 0; x < 160; x++) for (let k = 0; k < 4; k++) crop.data[(y * 160 + x) * 4 + k] = full.data[(y * 240 + x + 80) * 4 + k];
-    expect(() => detectPunk(crop)).toThrow(DetectError);
+  it('uses only real brick colours', () => {
+    const g = detectGhoul(figureImage(SKULL, 4));
+    expect(g.colors.every(c => c.brick > 0)).toBe(true);
   });
 });

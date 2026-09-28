@@ -2,7 +2,7 @@
 // drawn on a canvas (1600×1131, A4 landscape) and packed into a PDF.
 import type { Model } from '../core/build';
 import { rgbToHex } from '../core/color';
-import type { PunkGrid } from '../core/detect';
+import type { GhoulGrid } from '../core/detect';
 import { COLOR_BY_ID, renderHex } from '../core/palette';
 import type { Kind } from '../core/parts';
 import { StepRenderer } from './stepRenderer';
@@ -65,8 +65,9 @@ function footer(x: CanvasRenderingContext2D, n: number, title: string) {
   x.fillText(title, 60, PH - 36);
   x.textAlign = 'right'; x.fillText(String(n), PW - 60, PH - 36); x.textAlign = 'left';
 }
-function punkCanvas(g: PunkGrid, px: number) {
-  const c = document.createElement('canvas'); c.width = c.height = 24 * px;
+function ghoulCanvas(g: GhoulGrid, size: number) {
+  const px = size / Math.max(g.w, g.h);
+  const c = document.createElement('canvas'); c.width = c.height = size;
   const x = c.getContext('2d')!;
   x.fillStyle = g.background ? rgbToHex(g.background) : '#638596'; x.fillRect(0, 0, c.width, c.height);
   g.cells.forEach((row, r) => row.forEach((v, col) => { if (v >= 0) { x.fillStyle = rgbToHex(g.colors[v].rgb); x.fillRect(col * px, r * px, px, px); } }));
@@ -86,12 +87,12 @@ export class PageMaker {
   private r: StepRenderer;
   private NB: number;
   private title: string;
-  constructor(private m: Model, private grid: PunkGrid, private o: PageOptions) {
+  constructor(private m: Model, private grid: GhoulGrid, private o: PageOptions) {
     this.NB = Math.ceil(m.bom.length / BOM_PER);
     this.steps = m.steps.length;
     this.total = 1 + m.steps.length + this.NB;
     this.r = new StepRenderer(m, o.renderSize ?? 1100, o.label);
-    this.title = `${o.label ? `Punk ${o.label}` : 'Your Punk'} · ${m.size === 'xl' ? 'XL' : 'Mini'} brick bust`;
+    this.title = `${o.label ? `Ghoul ${o.label}` : 'Your Ghoul'} · ${m.size === 'xl' ? 'XL' : 'Mini'} brick model`;
   }
   /** "Cover", "Step 12", "Parts 1/2" */
   label(n: number): string {
@@ -106,17 +107,17 @@ export class PageMaker {
   const grad = x.createLinearGradient(0, 0, 0, PH); grad.addColorStop(0, '#7C95A5'); grad.addColorStop(1, '#5A7282');
   x.fillStyle = grad; x.fillRect(0, 0, PW, PH);
   x.drawImage(r.cover(), 540, 30, 1080, 1080);
-  x.drawImage(punkCanvas(grid, 15), 80, 330, 360, 360);
+  x.drawImage(ghoulCanvas(grid, 360), 80, 330, 360, 360);
   x.strokeStyle = '#fff'; x.lineWidth = 6; x.strokeRect(80, 330, 360, 360);
-  x.fillStyle = '#fff'; x.font = `bold 84px ${FONT}`; x.fillText(o.label ? `PUNK ${o.label}` : 'YOUR PUNK', 70, 150);
-  x.font = `44px ${FONT}`; x.fillText(`Brick edition · ${m.size === 'xl' ? 'XL' : 'Mini'} bust`, 74, 215);
+  x.fillStyle = '#fff'; x.font = `bold 84px ${FONT}`; x.fillText(o.label ? `GHOUL ${o.label}` : 'YOUR GHOUL', 70, 150);
+  x.font = `44px ${FONT}`; x.fillText(`Brick edition · ${m.size === 'xl' ? 'XL' : 'Mini'} · ${m.mode === 'backdrop' ? 'with backdrop' : 'figure only'}`, 74, 215);
   x.font = `bold 40px ${FONT}`; x.fillText(`${c.pieces.toLocaleString('en')} pieces`, 80, 800);
   x.font = `32px ${FONT}`;
   x.fillText(`${m.steps.length} steps · ${c.collisions} collisions · ${c.floating} floating`, 80, 850);
   x.fillText(`approx. ${m.dims[0]} × ${m.dims[1]} × ${m.dims[2]} cm`, 80, 895);
   x.font = `22px ${FONT}`; x.fillStyle = 'rgba(255,255,255,.85)';
   x.font = `19px ${FONT}`;
-  x.fillText('Made with Punk to Bricks · Unofficial fan project · Not affiliated with, sponsored or endorsed by the LEGO Group, BrickLink or the CryptoPunks project.', 80, 1024);
+  x.fillText('Made with Ghouls to Bricks · Unofficial fan project · Not affiliated with, sponsored or endorsed by the LEGO Group, BrickLink or the Ghouls project.', 80, 1024);
   x.fillText('LEGO® is a trademark of the LEGO Group. Parts data: Rebrickable. Computer-checked only, not physically built. Provided "as is", without warranty.', 80, 1052);
       return pg;
     }
@@ -167,7 +168,7 @@ export class PageMaker {
  * Draw the booklet's pages one by one and hand each to `use`. `pick` limits
  * which pages are drawn (e.g. a sample for the video).
  */
-export async function drawPages(m: Model, grid: PunkGrid, o: PageOptions, use: (page: HTMLCanvasElement, n: number, total: number) => void | Promise<void>, pick: (n: number, total: number) => boolean = () => true): Promise<number> {
+export async function drawPages(m: Model, grid: GhoulGrid, o: PageOptions, use: (page: HTMLCanvasElement, n: number, total: number) => void | Promise<void>, pick: (n: number, total: number) => boolean = () => true): Promise<number> {
   const pm = new PageMaker(m, grid, o);
   for (let n = 1; n <= pm.total; n++) {
     if (!pick(n, pm.total)) continue;
@@ -180,10 +181,10 @@ export async function drawPages(m: Model, grid: PunkGrid, o: PageOptions, use: (
 
 export const PAGE_SIZE = [PW, PH] as const;
 
-export async function makeInstructions(m: Model, grid: PunkGrid, o: PageOptions & { onProgress?: (done: number, total: number) => void }): Promise<Blob> {
+export async function makeInstructions(m: Model, grid: GhoulGrid, o: PageOptions & { onProgress?: (done: number, total: number) => void }): Promise<Blob> {
   const { jsPDF } = await import('jspdf');
   const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [PW, PH], compress: true, hotfixes: ['px_scaling'] });
-  pdf.setProperties({ title: `${o.label ? `Punk ${o.label}` : 'Your Punk'} brick bust — instructions`, creator: 'Punk to Bricks' });
+  pdf.setProperties({ title: `${o.label ? `Ghoul ${o.label}` : 'Your Ghoul'} brick model — instructions`, creator: 'Ghouls to Bricks' });
   await drawPages(m, grid, o, (pg, n, total) => {
     if (n > 1) pdf.addPage([PW, PH], 'landscape');
     pdf.addImage(pg.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, PW, PH, undefined, 'FAST');
