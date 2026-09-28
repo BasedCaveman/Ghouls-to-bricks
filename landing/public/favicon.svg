@@ -2,7 +2,7 @@
   <rect x="-2" y="-2" width="26" height="30" fill="#000000"/>
   <defs>
     <pattern id="studs" width="1" height="1" patternUnits="userSpaceOnUse">
-      <rect width="1" height="1" fill="#39ff6a"/>
+      <rect width="1" height="1" fill="#bf40ff"/>
       <circle cx="0.5" cy="0.5" r="0.3" fill="#000000" opacity="0.5"/>
     </pattern>
   </defs>

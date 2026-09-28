@@ -1,5 +1,7 @@
 ---
+import { Image } from "astro:assets";
 import SkullMark from "./SkullMark.astro";
+import kitPreview from "../assets/hero-kit-preview.webp";
 const APP_URL = "https://ghouls-to-bricks.vercel.app/";
 ---
 
@@ -21,6 +23,15 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
       <a class="btn btn-primary" href={APP_URL}>./build-my-ghoul</a>
       <a class="btn btn-ghost" href="#how">see how it works</a>
     </div>
+    <figure class="hero-proof">
+      <span class="hero-proof-bar" aria-hidden="true">$ brick_my_ghoul --kit</span>
+      <Image
+        src={kitPreview}
+        alt="A Ghoul skull rendered as a real brick kit: 2,148 pieces, 98 steps, 0 collisions, 0 floating pieces, about 51×10×52cm with backdrop."
+        width={1120}
+        loading="eager"
+      />
+    </figure>
     <p class="hero-note">
       Not affiliated with, sponsored or endorsed by the Based Ghouls project
       or the LEGO Group.
@@ -52,7 +63,7 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
     display: grid;
     gap: 1.5rem;
     justify-items: center;
-    max-width: 46rem;
+    max-width: 56rem;
   }
 
   .hero-title {
@@ -77,6 +88,30 @@ const APP_URL = "https://ghouls-to-bricks.vercel.app/";
     gap: 0.9rem;
     justify-content: center;
     margin-top: 0.5rem;
+  }
+
+  .hero-proof {
+    width: 100%;
+    max-width: 52rem;
+    margin: 1rem 0 0;
+    border: 1px solid var(--line);
+    background: var(--bg-raised);
+    box-shadow: 0 30px 70px -30px rgba(191, 64, 255, 0.35);
+  }
+
+  .hero-proof-bar {
+    display: block;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    font: 0.75rem/1 var(--mono);
+    color: var(--ghoul);
+    text-align: left;
+  }
+
+  .hero-proof img {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 
   .hero-note {
