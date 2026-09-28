@@ -9,7 +9,7 @@
 import { checkModel, connections, grounded, type Checks } from './check';
 import type { GhoulGrid } from './detect';
 import { BASE_GRAY, BLACK, COLOR_BY_ID, matchColor, TRANS_CLEAR } from './palette';
-import { hexToRgb } from './color';
+import { hexToRgb, rgbToLab } from './color';
 import { partId, partName, type Kind, type Piece } from './parts';
 import { key, tileLayer, type Layer } from './tile';
 import { availableAtLego } from './lego';
@@ -63,6 +63,9 @@ export function buildModel(grid: GhoulGrid, size: SizeId, o: BuildOptions = {}):
   const brickOf = grid.colors.map(c => (allow && !sold(c.brick) ? matchColor(hexToRgb(COLOR_BY_ID.get(c.brick)!.hex), sold) : c.brick));
   const moved = new Set(grid.colors.filter((c, i) => brickOf[i] !== c.brick).map(c => COLOR_BY_ID.get(c.brick)!.name));
   if (moved.size) notes.push(`Not sold by LEGO, replaced by the nearest colour it sells: ${[...moved].join(', ')}.`);
+  // a near-black backdrop would melt into a black figure: build the wall in Dark Blue instead (backdrop only, never the figure)
+  const WALL = 63;
+  const wallColor = (id: number) => (rgbToLab(hexToRgb(COLOR_BY_ID.get(id)!.hex))[0] < 20 && (!allow || sold(WALL)) ? WALL : id);
   const color = (r: number, c: number) => { const v = grid.cells[r][c]; return v < 0 ? -1 : brickOf[v]; };
   const Dfig = BD ? S.F + 1 : S.F;
   let B = Math.max(6, Dfig + 4); if (B % 2) B++;
@@ -92,7 +95,7 @@ export function buildModel(grid: GhoulGrid, size: SizeId, o: BuildOptions = {}):
         if (grid.mask[r][c]) {
           for (let z = zOff; z < zWall; z++) cells.set(key(x, z), { c: col });
           if (BD) cells.set(key(x, zWall), { c: col, wild: true });
-        } else if (BD) cells.set(key(x, zWall), { c: col });
+        } else if (BD) cells.set(key(x, zWall), { c: wallColor(col) });
       }
     }
     for (const l of S.rows[k % S.rows.length]) { sheets.push({ y, h: l.h, kind: l.kind, row: r, cells, mustSpan: new Set(), pieces: [] }); y += l.h; }
