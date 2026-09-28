@@ -163,7 +163,7 @@ async function run(label: string, job: () => Promise<void>) {
   exporting = true;
   busyButtons().forEach(b => { b.disabled = true; });
   try { await job(); progress(null); }
-  catch (e) { progress(`${label} failed: ${(e as Error).message}`, 0); setTimeout(() => progress(null), 6000); }
+  catch (e) { console.error(e); progress(`${label} failed: ${(e as Error).message || e}. Try again, or use Mini size.`, 0); setTimeout(() => progress(null), 15000); }
   finally { exporting = false; busyButtons().forEach(b => { b.disabled = false; }); }
 }
 
@@ -242,14 +242,14 @@ $('ghoulno').addEventListener('input', () => {
 $('dl-pdf').addEventListener('click', () => run('Instructions', async () => {
   const { makeInstructions } = await import('./export/pdf');
   progress('Drawing the instructions…', 0);
-  const pdf = await makeInstructions(current()!, grid!, { label: plateLabel(), renderSize: isPhone ? 800 : 1100, onProgress: (d, t) => progress(`Drawing page ${d} of ${t}…`, d / t) });
+  const pdf = await makeInstructions(current()!, grid!, { maker: makerFor === current() ? maker ?? undefined : undefined, label: plateLabel(), renderSize: isPhone ? 800 : 1100, onProgress: (d, t) => progress(`Drawing page ${d} of ${t}…`, d / t) });
   save(pdf, `${baseName()}-instructions.pdf`);
 }));
 $('dl-kit').addEventListener('click', () => run('Kit', async () => {
   const [{ makeInstructions }, { makeZip }] = await Promise.all([import('./export/pdf'), import('./export/zip')]);
   const m = current()!, name = baseName();
   progress('Drawing the instructions…', 0);
-  const pdf = await makeInstructions(m, grid!, { label: plateLabel(), renderSize: isPhone ? 800 : 1100, onProgress: (d, t) => progress(`Drawing page ${d} of ${t}…`, d / t) });
+  const pdf = await makeInstructions(m, grid!, { maker: makerFor === m ? maker ?? undefined : undefined, label: plateLabel(), renderSize: isPhone ? 800 : 1100, onProgress: (d, t) => progress(`Drawing page ${d} of ${t}…`, d / t) });
   const readme = [`${name} — made with Ghouls to Bricks`, '', `${m.checks.pieces} pieces · ${m.steps.length} steps · ${m.bom.length} lots · about ${m.dims.join(' × ')} cm`, '',
     `${name}-instructions.pdf   step-by-step instructions, one page per layer`, `${name}-parts.csv   parts list (BrickLink part and colour numbers)`, '',
     'To order the bricks, use "Buy the bricks" on the site: it makes your LEGO Pick a Brick and BrickLink lists.', '',

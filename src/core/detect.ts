@@ -97,35 +97,61 @@ function sampleGrid(img: RGBAImage, N: number): { w: number; h: number; rgb: (RG
   return { w: rows[0].length, h: rows.length, rgb: rows };
 }
 
-/** Figure vs. backdrop: flood fill from the border in Lab space. */
+/**
+ * Figure vs. backdrop: flood fill from the border, comparing every cell with the
+ * backdrop colour itself (not with its neighbour, which lets a dark gradient
+ * leak into the figure). Dark areas inside the figure are then closed so they
+ * stay figure (black pieces), never holes.
+ */
 function autoMask(rgb: (RGB | null)[][]): boolean[][] {
   const h = rgb.length, w = rgb[0].length;
   const labOf = (y: number, x: number) => (rgb[y][x] ? rgbToLab(rgb[y][x]!) : null);
-  const bg = new Uint8Array(w * h);
   const idx = (x: number, y: number) => y * w + x;
   const border: number[] = [];
   for (let x = 0; x < w; x++) border.push(idx(x, 0), idx(x, h - 1));
   for (let y = 0; y < h; y++) border.push(idx(0, y), idx(w - 1, y));
-  const bottom = new Set<number>(); for (let x = 0; x < w; x++) bottom.add(idx(x, h - 1));
-  const refLab = labOf(0, 0);
-  const st: number[] = [];
+  // reference backdrop colour: the most common border colour (coarsely bucketed)
+  const votes = new Map<string, { lab: [number, number, number]; n: number }>();
   for (const i of border) {
-    if (bottom.has(i) && refLab) { const l = labOf((i / w) | 0, i % w); if (l && Math.hypot(l[0] - refLab[0], l[1] - refLab[1], l[2] - refLab[2]) > 14) continue; }
-    if (!bg[i]) { bg[i] = 1; st.push(i); }
+    const l = labOf((i / w) | 0, i % w); if (!l) continue;
+    const k = `${Math.round(l[0] / 6)},${Math.round(l[1] / 6)},${Math.round(l[2] / 6)}`;
+    const e = votes.get(k) ?? { lab: l as [number, number, number], n: 0 }; e.n++; votes.set(k, e);
   }
-  const TH = 11;
+  const ref = [...votes.values()].sort((a, b) => b.n - a.n)[0]?.lab ?? null;
+  const TH = 9;
+  const isBack = (i: number) => {
+    const l = labOf((i / w) | 0, i % w);
+    return l ? !!ref && Math.hypot(l[0] - ref[0], l[1] - ref[1], l[2] - ref[2]) < TH : true;   // transparent = backdrop
+  };
+  const bg = new Uint8Array(w * h), st: number[] = [];
+  for (const i of border) if (!bg[i] && isBack(i)) { bg[i] = 1; st.push(i); }
   while (st.length) {
-    const i = st.pop()!, x = i % w, y = (i / w) | 0, li = labOf(y, x);
+    const i = st.pop()!, x = i % w, y = (i / w) | 0;
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
       const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-      const j = ny * w + nx; if (bg[j]) continue;
-      const lj = labOf(ny, nx);
-      if (li && lj && Math.hypot(li[0] - lj[0], li[1] - lj[1], li[2] - lj[2]) < TH) { bg[j] = 1; st.push(j); }
-      else if (!li && !lj) { bg[j] = 1; st.push(j); }
+      const j = idx(nx, ny); if (!bg[j] && isBack(j)) { bg[j] = 1; st.push(j); }
     }
   }
+  // close the figure (dilate then erode, 5×5) so thin dark gaps and inlets inside it fill in
+  let fig = new Uint8Array(w * h).map((_, i) => 1 - bg[i]);
+  const morph = (src: Uint8Array, grow: boolean) => {
+    const out = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let hit = grow ? 0 : 1;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+        const nx = x + dx, ny = y + dy;
+        const v = nx < 0 || ny < 0 || nx >= w || ny >= h ? 0 : src[idx(nx, ny)];
+        if (grow) { if (v) hit = 1; } else if (!v) hit = 0;
+      }
+      out[idx(x, y)] = hit;
+    }
+    return out;
+  };
+  const closed = morph(morph(fig, true), false);
+  const dark = (i: number) => { const l = labOf((i / w) | 0, i % w); return !l || l[0] < 22; };   // only near-black gaps become figure
+  fig = fig.map((v, i) => (v || (closed[i] && dark(i)) ? 1 : 0));
   const mask: boolean[][] = [];
-  for (let y = 0; y < h; y++) { const row: boolean[] = []; for (let x = 0; x < w; x++) row.push(!bg[idx(x, y)]); mask.push(row); }
+  for (let y = 0; y < h; y++) { const row: boolean[] = []; for (let x = 0; x < w; x++) row.push(!!fig[idx(x, y)]); mask.push(row); }
   return mask;
 }
 
