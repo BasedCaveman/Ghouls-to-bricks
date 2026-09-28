@@ -1,14 +1,10 @@
 ---
-import SkullMark from "./SkullMark.astro";
 const APP_URL = "/build/";
 ---
 
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="#top">
-      <span class="brand-mark" aria-hidden="true"><SkullMark /></span>
-      <span class="brand-text">brick_my_ghoul</span>
-    </a>
+    <a class="brand brick-text" href="#top">BRICK my GHOUL</a>
     <a class="btn btn-primary nav-cta" href={APP_URL}>brick my ghoul</a>
   </div>
 </header>
@@ -33,24 +29,9 @@ const APP_URL = "/build/";
   }
 
   .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    text-decoration: none;
-    color: var(--bone);
-  }
-
-  .brand-text {
-    font: 700 0.95rem/1 var(--mono);
+    font-size: 0.95rem;
     letter-spacing: 0.01em;
-  }
-
-  .brand-mark {
-    display: inline-flex;
-    width: 20px;
-    aspect-ratio: 22 / 26;
-    color: var(--ghoul);
-    flex: none;
+    text-decoration: none;
   }
 
   .nav-cta {

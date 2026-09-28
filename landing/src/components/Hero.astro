@@ -1,18 +1,16 @@
 ---
 import { Image } from "astro:assets";
-import SkullMark from "./SkullMark.astro";
 import kitPreview from "../assets/hero-kit-preview.webp";
 const APP_URL = "/build/";
 ---
 
 <section id="top" class="hero">
-  <div class="hero-mark" aria-hidden="true"><SkullMark /></div>
   <div class="wrap hero-inner">
     <div class="hero-copy">
       <p class="eyebrow">free · unofficial fan tool · 100% client-side</p>
       <h1 class="hero-title">
         Consumed as a jpeg.<br />
-        <span class="accent">Brick my Ghoul<span class="caret" aria-hidden="true"></span></span>
+        <span class="brick-text">BRICK my GHOUL<span class="caret" aria-hidden="true"></span></span>
       </h1>
       <p class="hero-sub">
         Drop your Based Ghoul in and watch it get reforged, stud by stud, into
@@ -48,17 +46,6 @@ const APP_URL = "/build/";
     padding-block: clamp(2rem, 6vw, 4rem) var(--space-section);
   }
 
-  .hero-mark {
-    position: absolute;
-    inset: -6% 0 auto;
-    width: min(38vw, 480px);
-    aspect-ratio: 22 / 26;
-    margin-inline: auto;
-    color: var(--ghoul);
-    opacity: 0.06;
-    pointer-events: none;
-  }
-
   .hero-inner {
     position: relative;
     display: grid;
@@ -77,11 +64,6 @@ const APP_URL = "/build/";
   .hero-title {
     font-size: clamp(2.2rem, 4.6vw + 1rem, 4.4rem);
     line-height: 1.04;
-  }
-
-  .accent {
-    color: var(--ghoul);
-    font-family: var(--mono);
   }
 
   .hero-sub {
