@@ -30,11 +30,11 @@ export class Book {
     this.LAST = Math.max(0, Math.min(this.NL - 1, Math.floor((pages.length - 2) / 2)));
     const sc = this.scene;
     sc.background = SKY;
-    sc.add(new THREE.HemisphereLight(0xffffff, 0x6b8fa8, 1.6));
+    sc.add(new THREE.HemisphereLight(0xffffff, 0x2a1a33, 1.6));
     const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-14, 40, 18); sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 30, bottom: -30, near: 1, far: 120 });
     sc.add(sun);
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.3, color: 0x1f4a6b }));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.3, color: 0x2a1440 }));
     floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; sc.add(floor);
     const white = new THREE.MeshStandardMaterial({ color: 0xf4f6f8, roughness: 0.9 });
     const box = () => { const b = new THREE.Mesh(new THREE.BoxGeometry(this.PW, 1, this.PH), white); b.castShadow = b.receiveShadow = true; sc.add(b); return b; };
