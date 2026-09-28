@@ -1,0 +1,189 @@
+/* Reset mínimo — base responsiva e compatível, sem framework.
+   Tokens de design da landing "Ghouls to Bricks" entram abaixo do reset. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100svh;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  overflow-wrap: break-word;
+}
+
+/* ---------------------------------------------------------------------
+   Design tokens — "Ghouls to Bricks"
+   Fundo cemitério + osso + 1 destaque (verde tóxico de ghoul).
+--------------------------------------------------------------------- */
+
+:root {
+  --bg: #0b0d0a;
+  --bg-raised: #12150f;
+  --bone: #eef0e6;
+  --bone-dim: #b9bfb0;
+  --ghoul: #7cff5e;
+  --ghoul-dim: #3fa32c;
+  --line: #262b21;
+
+  --display: clamp(2.6rem, 5.4vw + 1rem, 5.2rem);
+  --h2: clamp(1.9rem, 2.6vw + 1rem, 2.75rem);
+  --h3: clamp(1.25rem, 1vw + 1rem, 1.5rem);
+  --body: clamp(1rem, 0.3vw + 0.9rem, 1.125rem);
+
+  --space-section: clamp(4rem, 8vw, 7rem);
+  --space-block: clamp(1.5rem, 3vw, 2.5rem);
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #0b0d0a;
+    --bg-raised: #12150f;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--bone);
+  background-image: radial-gradient(
+      ellipse 900px 480px at 15% -10%,
+      rgba(124, 255, 94, 0.08),
+      transparent 60%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.015) 0px,
+      rgba(255, 255, 255, 0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+::selection {
+  background: var(--ghoul);
+  color: #05170a;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ghoul);
+  outline-offset: 3px;
+}
+
+.wrap {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2rem);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font: 700 0.8125rem/1 ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ghoul);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--ghoul);
+  box-shadow: 0 0 0 3px rgba(124, 255, 94, 0.18);
+}
+
+h1,
+h2 {
+  text-wrap: balance;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  padding: 0.95em 1.6em;
+  border-radius: var(--radius);
+  font: 700 1rem/1 system-ui, sans-serif;
+  text-decoration: none;
+  min-height: 44px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--ghoul);
+  color: #06180a;
+  box-shadow: 0 0 0 1px rgba(124, 255, 94, 0.4), 0 12px 32px -12px rgba(124, 255, 94, 0.55);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(124, 255, 94, 0.55), 0 18px 36px -12px rgba(124, 255, 94, 0.7);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--bone);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+
+.btn-ghost:hover {
+  box-shadow: inset 0 0 0 1.5px var(--ghoul-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

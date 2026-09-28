@@ -1,0 +1,89 @@
+---
+const steps = [
+  {
+    n: "01",
+    title: "Drop your Ghoul",
+    body: "Paste, drop or upload the image — the original file, a download, or a screenshot of the marketplace page. No token list, nothing invented.",
+  },
+  {
+    n: "02",
+    title: "Watch it get reforged",
+    body: "The engine reads the pixels, matches every one to a real brick colour, and stacks it bottom-up in 3D — backdrop wall or figure only, your call.",
+  },
+  {
+    n: "03",
+    title: "Build it for real",
+    body: "Every model is computer-checked: no floating pieces, no collisions, balanced on its base. Download the manual, then order the bricks.",
+  },
+];
+---
+
+<section id="how" class="how">
+  <div class="wrap">
+    <p class="eyebrow">The ritual</p>
+    <h2 class="how-title">Three steps from pixel to plastic</h2>
+    <ol class="steps">
+      {
+        steps.map((s) => (
+          <li class="step">
+            <span class="step-n" aria-hidden="true">{s.n}</span>
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .how {
+    padding-block: var(--space-section);
+    border-top: 1px solid var(--line);
+  }
+
+  .how-title {
+    font-size: var(--h2);
+    margin-block: 0.5rem var(--space-block);
+    max-width: 28ch;
+  }
+
+  .steps {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .step {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+  }
+
+  .step-n {
+    font: 800 0.875rem/1 ui-monospace, "SFMono-Regular", Menlo, monospace;
+    color: var(--ghoul);
+    letter-spacing: 0.05em;
+  }
+
+  .step h3 {
+    font-size: var(--h3);
+  }
+
+  .step p {
+    color: var(--bone-dim);
+    font-size: 0.9375rem;
+  }
+
+  @media (max-width: 760px) {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

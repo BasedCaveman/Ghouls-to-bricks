@@ -1,0 +1,97 @@
+---
+const faqs = [
+  {
+    q: "Is my Ghoul uploaded anywhere?",
+    a: "No. Reading the image, designing the model, the 3D view and the PDF all happen in your browser. There's no server and no AI behind this — nothing about your Ghoul is stored or sent.",
+  },
+  {
+    q: "Can I really build it?",
+    a: "Every model is checked by computer: all pieces are standard parts in real colours, everything is attached to the base, no collisions, and it balances on its own. Models haven't been physically built yet, so treat your first one as a test.",
+  },
+  {
+    q: "Is this an official Based Ghouls product?",
+    a: "No — Ghouls to Bricks is a free, open-source, unofficial fan project. It's not affiliated with, sponsored or endorsed by the Based Ghouls project, BrickLink or the LEGO Group. It sells nothing and earns nothing from your order: no affiliate links, no commission.",
+  },
+  {
+    q: "How do I actually get the bricks?",
+    a: "The tool generates a LEGO Pick a Brick file and a BrickLink wanted list. You upload those on LEGO's or BrickLink's own sites and pay them directly — never here.",
+  },
+];
+---
+
+<section class="faq">
+  <div class="wrap wrap-narrow">
+    <p class="eyebrow">Before you summon one</p>
+    <h2 class="faq-title">Questions</h2>
+    <div class="list">
+      {
+        faqs.map((f) => (
+          <details class="item">
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq {
+    padding-block: var(--space-section);
+    border-top: 1px solid var(--line);
+  }
+
+  .wrap-narrow {
+    max-width: 760px;
+  }
+
+  .faq-title {
+    font-size: var(--h2);
+    margin-block: 0.5rem var(--space-block);
+  }
+
+  .list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .item {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.35rem;
+  }
+
+  .item summary {
+    cursor: pointer;
+    font-weight: 700;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .item summary::after {
+    content: "+";
+    color: var(--ghoul);
+    font-size: 1.25rem;
+    flex: none;
+    transition: transform 0.15s ease;
+  }
+
+  .item[open] summary::after {
+    transform: rotate(45deg);
+  }
+
+  .item p {
+    margin-top: 0.75rem;
+    color: var(--bone-dim);
+    font-size: 0.9375rem;
+  }
+</style>

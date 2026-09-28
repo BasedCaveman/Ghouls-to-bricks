@@ -1,0 +1,45 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <p>
+      Unofficial fan project · Not affiliated with, sponsored or endorsed by
+      the Based Ghouls project or the LEGO Group. LEGO® is a trademark of the
+      LEGO Group.
+    </p>
+    <p>
+      <a
+        href="https://github.com/BasedCaveman/Ghouls-to-bricks"
+        target="_blank"
+        rel="noopener"
+      >Source code</a>
+      · Made by pedr0x.eth · {year}
+    </p>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    padding-block: 2.5rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.8125rem;
+    color: var(--bone-dim);
+  }
+
+  .foot-inner {
+    display: grid;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .foot a {
+    color: var(--ghoul);
+    text-decoration: none;
+  }
+
+  .foot a:hover {
+    text-decoration: underline;
+  }
+</style>

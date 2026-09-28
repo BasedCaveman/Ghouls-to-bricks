@@ -1,0 +1,87 @@
+---
+import SkullMark from "./SkullMark.astro";
+const APP_URL = "https://ghouls-to-bricks.vercel.app/";
+---
+
+<section id="top" class="hero">
+  <div class="hero-mark" aria-hidden="true"><SkullMark /></div>
+  <div class="wrap hero-inner">
+    <p class="eyebrow">Free · unofficial fan tool · 100% in your browser</p>
+    <h1 class="hero-title">
+      Consumed as a jpeg.<br />
+      <span class="accent">Summoned anew</span> in ABS.
+    </h1>
+    <p class="hero-sub">
+      Drop your Based Ghoul in and watch it get reforged, stud by stud, into a
+      brick model you can actually build. Real LEGO® colours, a step-by-step
+      manual and a parts list ready to order — no wallet, no upload, no
+      lookup.
+    </p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href={APP_URL}>Build my Ghoul →</a>
+      <a class="btn btn-ghost" href="#how">See how it works</a>
+    </div>
+    <p class="hero-note">
+      Not affiliated with, sponsored or endorsed by the Based Ghouls project
+      or the LEGO Group.
+    </p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: clip;
+    padding-block: clamp(4rem, 10vw, 8rem) var(--space-section);
+    text-align: center;
+  }
+
+  .hero-mark {
+    position: absolute;
+    inset: -8% 0 auto;
+    width: min(46vw, 620px);
+    aspect-ratio: 1 / 1;
+    margin-inline: auto;
+    color: var(--ghoul);
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    display: grid;
+    gap: 1.5rem;
+    justify-items: center;
+    max-width: 46rem;
+  }
+
+  .hero-title {
+    font-size: var(--display);
+    line-height: 1.04;
+  }
+
+  .accent {
+    color: var(--ghoul);
+  }
+
+  .hero-sub {
+    font-size: clamp(1.05rem, 0.4vw + 1rem, 1.25rem);
+    color: var(--bone-dim);
+    max-width: 42ch;
+  }
+
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .hero-note {
+    font-size: 0.8125rem;
+    color: var(--bone-dim);
+    opacity: 0.75;
+    max-width: 34ch;
+  }
+</style>

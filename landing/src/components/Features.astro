@@ -1,0 +1,94 @@
+---
+const features = [
+  {
+    title: "3D build animation",
+    body: "Watch your Ghoul rise layer by layer before you touch a single brick — replay it, skip it, share the clip.",
+  },
+  {
+    title: "Step-by-step manual",
+    body: "One page per layer, flip through it in the browser or download the full PDF booklet.",
+  },
+  {
+    title: "Real parts, real checks",
+    body: "Every colour maps to an actual LEGO® shade. 0 floating pieces, 0 collisions, balanced centre of mass — checked automatically.",
+  },
+  {
+    title: "Buy it two ways",
+    body: "Export a LEGO Pick a Brick list or a BrickLink wanted-list XML — order straight from the source, nothing goes through this site.",
+  },
+  {
+    title: "Mini or XL",
+    body: "1 pixel = 1 stud for a desk-sized bust, or 1 pixel = 2×2 studs for a display piece with real presence.",
+  },
+  {
+    title: "Nothing leaves your browser",
+    body: "No upload, no server, no AI, nothing looked up. Your Ghoul is read and built on your own device.",
+  },
+];
+---
+
+<section class="features">
+  <div class="wrap">
+    <p class="eyebrow">What you get</p>
+    <h2 class="features-title">Everything to actually build it</h2>
+    <ul class="grid">
+      {
+        features.map((f) => (
+          <li class="card">
+            <h3>{f.title}</h3>
+            <p>{f.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .features {
+    padding-block: var(--space-section);
+    border-top: 1px solid var(--line);
+  }
+
+  .features-title {
+    font-size: var(--h2);
+    margin-block: 0.5rem var(--space-block);
+    max-width: 30ch;
+  }
+
+  .grid {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 1px;
+    grid-template-columns: repeat(3, 1fr);
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: clip;
+  }
+
+  .card {
+    background: var(--bg);
+    padding: 1.75rem;
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+  }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .card p {
+    color: var(--bone-dim);
+    font-size: 0.9375rem;
+  }
+
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
