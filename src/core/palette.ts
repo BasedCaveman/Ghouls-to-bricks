@@ -1,5 +1,5 @@
-// Short list of common brick colours (BrickLink colour IDs and names) and the
-// mapping from Punk colours to the closest real brick colour.
+// Brick colours (BrickLink colour IDs and names) and LEGO colour matching via
+// CIEDE2000 (nearest real brick colour to a source pixel).
 import { deltaE, hexToRgb, rgbToLab, type Lab, type RGB } from './color';
 
 export interface BrickColor {
@@ -15,9 +15,12 @@ export const BRICK_COLORS: BrickColor[] = [
   { id: 11, name: 'Black', hex: '#1B1B1B' },
   { id: 86, name: 'Light Bluish Gray', hex: '#A0A5A9' },
   { id: 85, name: 'Dark Bluish Gray', hex: '#6C6E68' },
+  { id: 99, name: 'Very Light Bluish Gray', hex: '#E6E3DA' },
   { id: 5, name: 'Red', hex: '#C91A09' },
   { id: 59, name: 'Dark Red', hex: '#720E0F' },
   { id: 4, name: 'Orange', hex: '#FE8A18' },
+  { id: 68, name: 'Dark Orange', hex: '#A95500' },
+  { id: 110, name: 'Bright Light Orange', hex: '#F8BB3D' },
   { id: 3, name: 'Yellow', hex: '#F2CD37' },
   { id: 103, name: 'Bright Light Yellow', hex: '#FFF03A' },
   { id: 2, name: 'Tan', hex: '#E4CD9E' },
@@ -25,30 +28,31 @@ export const BRICK_COLORS: BrickColor[] = [
   { id: 90, name: 'Light Nougat', hex: '#F6D7B3' },
   { id: 28, name: 'Nougat', hex: '#D09168' },
   { id: 150, name: 'Medium Nougat', hex: '#AA7D55' },
-  { id: 68, name: 'Dark Orange', hex: '#A95500' },
   { id: 88, name: 'Reddish Brown', hex: '#582A12' },
   { id: 120, name: 'Dark Brown', hex: '#352100' },
-  { id: 34, name: 'Lime', hex: '#BBE90B' },
-  { id: 36, name: 'Bright Green', hex: '#4B9F4A' },
-  { id: 6, name: 'Green', hex: '#237841' },
-  { id: 80, name: 'Dark Green', hex: '#184632' },
-  { id: 155, name: 'Olive Green', hex: '#9B9A5A' },
-  { id: 48, name: 'Sand Green', hex: '#A0BCAC' },
-  { id: 152, name: 'Light Aqua', hex: '#ADC3C0', render: '#C9EDE6' },
-  { id: 156, name: 'Medium Azure', hex: '#36AEBF' },
-  { id: 105, name: 'Bright Light Blue', hex: '#9FC3E9' },
-  { id: 7, name: 'Blue', hex: '#0055BF' },
-  { id: 63, name: 'Dark Blue', hex: '#0A3463' },
-  { id: 55, name: 'Sand Blue', hex: '#6074A1' },
+  { id: 220, name: 'Coral', hex: '#FF698F' },
   { id: 104, name: 'Bright Pink', hex: '#E4ADC8' },
   { id: 47, name: 'Dark Pink', hex: '#C870A0' },
   { id: 71, name: 'Magenta', hex: '#923978' },
-  { id: 89, name: 'Dark Purple', hex: '#4B2E8C' },
-  { id: 157, name: 'Medium Lavender', hex: '#AC78BA' },
   { id: 154, name: 'Lavender', hex: '#E1D5ED' },
+  { id: 157, name: 'Medium Lavender', hex: '#AC78BA' },
+  { id: 89, name: 'Dark Purple', hex: '#3F3691' },
+  { id: 55, name: 'Sand Blue', hex: '#6074A1' },
+  { id: 63, name: 'Dark Blue', hex: '#0A3463' },
+  { id: 7, name: 'Blue', hex: '#0055BF' },
+  { id: 42, name: 'Medium Blue', hex: '#5A93DB' },
+  { id: 153, name: 'Dark Azure', hex: '#078BC9' },
+  { id: 156, name: 'Medium Azure', hex: '#36AEBF' },
+  { id: 105, name: 'Bright Light Blue', hex: '#9FC3E9' },
+  { id: 152, name: 'Light Aqua', hex: '#ADC3C0', render: '#C9EDE6' },
+  { id: 39, name: 'Dark Turquoise', hex: '#008F9B' },
+  { id: 48, name: 'Sand Green', hex: '#A0BCAC' },
+  { id: 80, name: 'Dark Green', hex: '#184632' },
+  { id: 6, name: 'Green', hex: '#237841' },
+  { id: 36, name: 'Bright Green', hex: '#4B9F4A' },
+  { id: 34, name: 'Lime', hex: '#BBE90B' },
+  { id: 155, name: 'Olive Green', hex: '#9B9A5A' },
   { id: 12, name: 'Trans-Clear', hex: '#EEEEEE', trans: true },
-  { id: 15, name: 'Trans-Light Blue', hex: '#AEEFEC', trans: true },
-  { id: 17, name: 'Trans-Red', hex: '#C91A09', trans: true },
 ];
 
 export const COLOR_BY_ID = new Map(BRICK_COLORS.map(c => [c.id, c]));
@@ -56,59 +60,49 @@ export const BLACK = 11, TRANS_CLEAR = 12, BASE_GRAY = 85;
 const LAB = new Map<number, Lab>(BRICK_COLORS.map(c => [c.id, rgbToLab(hexToRgb(c.hex))]));
 // Trans-Clear is reserved for support pieces; never matched from the image.
 const MATCHABLE = BRICK_COLORS.filter(c => c.id !== TRANS_CLEAR);
-/** A transparent colour is only used for small details (glasses lenses, etc.). */
-const TRANS_MAX_PIXELS = 16;
-const MAX_EXTRA = 8;
 
-export interface PunkColor { rgb: RGB; count: number }
+/** Nearest real brick colour to a source pixel, by CIEDE2000 distance; `ok` limits the choice. */
+export function matchColor(rgb: RGB, ok: (id: number) => boolean = () => true): number {
+  const lab = rgbToLab(rgb);
+  let best = -1, bd = Infinity;
+  for (const c of MATCHABLE) { if (!ok(c.id)) continue; const d = deltaE(lab, LAB.get(c.id)!); if (d < bd) { bd = d; best = c.id; } }
+  return best;
+}
 
 /**
- * Map each Punk colour to a brick colour. Starts with the nearest colour, then
- * resolves clashes: two clearly different Punk colours that touch each other
- * must not collapse into the same brick colour (e.g. skin vs. beard).
+ * Quantise every cell of a grid to a brick colour, then (optionally) merge
+ * the least-used colours into their next best match until at most
+ * `maxColors` remain: fewer, cleaner lots to buy.
  */
-export function mapColors(colors: PunkColor[], touching: Set<string>): number[] {
-  const labs = colors.map(c => rgbToLab(c.rgb));
-  const ranked = colors.map((c, i) => {
-    const pure = c.rgb[0] < 8 && c.rgb[1] < 8 && c.rgb[2] < 8;
-    const cands = MATCHABLE.filter(b => !b.trans || c.count <= TRANS_MAX_PIXELS)
-      .map(b => ({ id: b.id, d: pure ? (b.id === BLACK ? 0 : 999) : deltaE(labs[i], LAB.get(b.id)!) }))
-      .sort((a, b) => a.d - b.d);
-    return cands;
-  });
-  const pick = ranked.map(() => 0);
-  const key = (i: number, j: number) => (i < j ? `${i},${j}` : `${j},${i}`);
-  for (let iter = 0; iter < 50; iter++) {
-    let changed = false;
-    for (let i = 0; i < colors.length; i++) for (let j = i + 1; j < colors.length; j++) {
-      if (ranked[i][pick[i]].id !== ranked[j][pick[j]].id) continue;
-      if (!touching.has(key(i, j)) || deltaE(labs[i], labs[j]) < 8) continue;
-      // move whichever colour loses least by going to its next free choice
-      const next = (k: number) => {
-        for (let p = pick[k] + 1; p < ranked[k].length; p++) {
-          const id = ranked[k][p].id;
-          const clash = colors.some((_, m) => m !== k && touching.has(key(k, m)) && ranked[m][pick[m]].id === id && deltaE(labs[k], labs[m]) >= 8);
-          if (!clash) return p;
-        }
-        return -1;
-      };
-      const ni = next(i), nj = next(j);
-      // move the colour that costs least overall (ΔE lost × pixels): small
-      // details move, big areas keep their best match. A detail may drift
-      // further to stay visible; a big area only to a still-good match.
-      const cost = (k: number, n: number) => {
-        if (n < 0) return Infinity;
-        const extra = ranked[k][n].d - ranked[k][pick[k]].d;
-        return extra > (colors[k].count <= 6 ? 25 : MAX_EXTRA) ? Infinity : extra * colors[k].count;
-      };
-      const ci = cost(i, ni), cj = cost(j, nj);
-      if (ci === Infinity && cj === Infinity) continue;
-      if (ci <= cj) pick[i] = ni; else pick[j] = nj;
-      changed = true;
-    }
-    if (!changed) break;
+export function quantizeGrid(rgb: (RGB | null)[][], maxColors?: number): number[][] {
+  const h = rgb.length, w = rgb[0]?.length ?? 0;
+  const labs: (Lab | null)[][] = rgb.map(row => row.map(p => (p ? rgbToLab(p) : null)));
+  const q: number[][] = labs.map(row => row.map(() => -1));
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const l = labs[y][x]; if (!l) { q[y][x] = -1; continue; }
+    let best = MATCHABLE[0].id, bd = Infinity;
+    for (const c of MATCHABLE) { const d = deltaE(l, LAB.get(c.id)!); if (d < bd) { bd = d; best = c.id; } }
+    q[y][x] = best;
   }
-  return ranked.map((r, i) => r[pick[i]].id);
+  if (maxColors && maxColors > 0) {
+    const count = new Map<number, number>();
+    for (const row of q) for (const c of row) if (c >= 0) count.set(c, (count.get(c) ?? 0) + 1);
+    let used = new Set(count.keys());
+    while (used.size > maxColors) {
+      let least = -1, lc = Infinity;
+      for (const [c, n] of count) if (used.has(c) && n < lc) { lc = n; least = c; }
+      used.delete(least);
+      const rem = [...used];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        if (q[y][x] !== least) continue;
+        const l = labs[y][x]!;
+        let bi = rem[0], bd = Infinity;
+        for (const c of rem) { const d = deltaE(l, LAB.get(c)!); if (d < bd) { bd = d; bi = c; } }
+        q[y][x] = bi;
+        count.set(bi, (count.get(bi) ?? 0) + 1);
+      }
+    }
+  }
+  return q;
 }
 
 /** Colour to draw a brick with (3D view, instructions). */

@@ -10,6 +10,6 @@
 
 ## Legal notice
 
-Unofficial fan project · Not affiliated with, sponsored or endorsed by the LEGO Group, BrickLink or the CryptoPunks project. LEGO® is a trademark of the LEGO Group. Parts data: Rebrickable. No purchases, payments or personal data go through this site.
+Unofficial fan project · Not affiliated with, sponsored or endorsed by the LEGO Group, BrickLink or the Ghouls project. LEGO® is a trademark of the LEGO Group. Parts data: Rebrickable. No purchases, payments or personal data go through this site.
 
 The site is 100% static: everything runs in your browser. There is no server, no payment, no affiliate link and no visitor tracking.

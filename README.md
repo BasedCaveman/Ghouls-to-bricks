@@ -1,62 +1,39 @@
-# Punk to Bricks
+# Ghouls to Bricks
 
-Turn your CryptoPunk into a brick bust you can really build.
-
-<p align="center">
-  <a href="https://hs7j4yk4sz-boop.github.io/punk-to-bricks/"><img src="public/og.png" alt="Punk to Bricks: turn your Punk into a brick bust you can really build" width="720"></a>
-</p>
-
-<h3 align="center">👉 <a href="https://hs7j4yk4sz-boop.github.io/punk-to-bricks/">Open Punk to Bricks</a> 👈</h3>
-<p align="center">Free · runs in your browser · your image never leaves your device</p>
+Turn your Ghoul into a brick model you can really build.
 
 ## How to use
 
-1. **Type your Punk number** (0 to 9999), or **drop its image**: the original PNG, a marketplace download or a phone screenshot. No Punk at hand? Click one of the examples.
-2. **① Your bust**: watch it build in 3D, pick **Mini** (about 400 pieces) or **XL** (about 1,250 pieces), turn it with your finger or mouse. The key figures are big: pieces, steps, lots to buy, size; "More info" shows every check. Download a video of the build (square or 9:16).
-3. **② Instructions**: flip through the step-by-step booklet right on the page, then download it as a PDF or as a full kit (PDF + parts list).
-4. **③ Buy the bricks**: see your shopping list (every part, its quantity, red if LEGO sells it, blue if only BrickLink has it), then **Buy at LEGO** (a Pick a Brick upload file) or **Buy on BrickLink** (a wanted list to paste). "Only parts LEGO sells" rebuilds your bust with parts LEGO sells and runs every check again.
-
-<p align="center">
-  <img src="docs/bust.png" alt="① Your bust: the 3D bust and its key figures" width="640">
-  <img src="docs/instructions.png" alt="② Instructions: the booklet on the page" width="640">
-  <img src="docs/buy.png" alt="③ Buy the bricks: shopping list, Buy at LEGO, Buy on BrickLink" width="640">
-</p>
-
-## What's inside
-
-- **100% static.** Everything runs in the visitor's browser (a Web Worker does the heavy lifting). No server, no AI, no API key, no tracking.
-- **Two sizes.** Mini: 1 pixel = 1 stud, rows alternate one brick and two plates so pixels stay square. XL: 1 pixel = 2×2 studs, 5 plates tall, hollow with 2-stud walls.
-- **Honest checks.** Every model is checked on its final piece list: studs connected, 0 floating pieces, 0 collisions, centre of mass over the base, weak joints. A failed check is shown, never hidden. Tested on all 10,000 CryptoPunks, in both sizes.
-- **Order the bricks.** A Pick a Brick upload file in LEGO's own CSV format (400 references and 999 units per line at most, split into several files when needed) and a BrickLink wanted list (Want → Upload → "Upload BrickLink XML format"). Element IDs come from [Rebrickable](https://rebrickable.com)'s free exports, built into `src/data/elements.json` by `scripts/build-elements.ts` (no live calls). Nothing is sold here: you order and pay on LEGO or BrickLink.
-- **Exports.** Full kit ZIP (PDF booklet, one page per layer with the step's parts in colour and outlined in yellow, plus parts inventory; CSV parts list), and square or 9:16 videos of the build ending on the flipping booklet, with brick clicks made in Web Audio.
-
-Inspired by [@victormustar](https://x.com/victormustar)'s Microduck and by [my own CryptoPunk bust](https://github.com/hs7j4yk4sz-boop/cryptopunk-brick-bust).
+1. **Drop, paste or upload your Ghoul**: the original image, a download, or a screenshot (e.g. of its marketplace page). There is no built-in token list: the image is the only input.
+2. Optionally type its **OpenSea code** (e.g. `#1284`). It is only a label (name plate, booklet, file names): it is never fetched, looked up or guessed.
+3. **① Your model**: pick **Mini** (1 pixel = 1 stud) or **XL** (1 pixel = 2 studs wide), and **Backdrop** (the figure standing out from a wall made of the image's background) or **Figure only**. Watch it build in 3D; "More info" shows every check. Download a video of the build.
+4. **② Instructions**: flip through the booklet on the page, download it as a PDF or a full kit (PDF + parts list).
+5. **③ Buy the bricks**: Pick a Brick upload file and BrickLink wanted list (XML). "Only parts LEGO sells" rebuilds with parts and colours LEGO sells and runs every check again.
 
 ## How it works
 
-1. **Find the Punk** (`src/core/detect.ts`). Look for a flat background region whose bounding box is a square, read the 24×24 grid from the centre of each cell, and tell background from Punk with a tolerance sized to the image noise (exact on PNG, tolerant on JPEG and screenshots).
-2. **Pick brick colours** (`src/core/palette.ts`). Nearest of 38 common BrickLink colours (CIEDE2000); two touching colours that differ are kept apart, the smaller one moves.
-3. **Understand the pixels** (`src/core/analyze.ts`). Solid head vs. thin parts (brims, pipes, cigarettes, ears: a 4×4 morphological opening), floating details (smoke) held by clear supports, and the colour each pixel shows on the sides and back.
-4. **Build** (`src/core/build.ts`, `src/core/tile.ts`). Stud cells per layer, rounded top and back corners, hollow inside, base sized to the centre of mass. Each layer is filled greedily with real bricks, plates and tiles, alternating direction; hidden cells may take any colour, which lets pieces bridge from a visible detail into the body. Anything left floating is repaired (re-tiling around it, bridging from above or below, or a support stack).
-5. **Check** (`src/core/check.ts`) the final piece list.
+1. **Find the grid** (`src/core/detect.ts`). A small image (≤96 px) is read pixel for pixel. Otherwise the pixel pitch and phase are fitted to the image's colour edges (autocorrelation along x and y, 32×32 expected), each cell is read as the median of its centre, and screenshot frames are trimmed. In a page screenshot the figure's square backdrop is found first. The figure is told from its backdrop by a flood fill from the border in Lab space.
+2. **Pick brick colours** (`src/core/palette.ts`). Nearest BrickLink colour by CIEDE2000, then the least-used colours are merged until at most 24 remain.
+3. **Build** (`src/core/build.ts`, `src/core/tile.ts`). Two black base plates, then one brick or two plates per pixel row (XL: brick + 2 plates), bottom-up. Each figure pixel is extruded through the depth; in backdrop mode a one-stud wall of the background colour stands behind it. Each sheet is filled largest pieces first, alternating direction so seams cross. Floating pieces are repaired: in backdrop mode tied into the wall by a piece running through the depth, otherwise held by a stack of Trans-Clear 1×1 supports.
+4. **Check** (`src/core/check.ts`) the final piece list: studs connected, 0 floating, 0 collisions, centre of mass over the base, weak joints.
 
 ## Develop
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # unit tests (detection, solidity, exports, all example Punks)
+npm test           # unit tests (detection, solidity, exports, order files)
 npm run build      # static site in dist/
 ```
 
-Typing a Punk number uses `public/punks.png`, the official image of all 10,000 CryptoPunks from [larvalabs/cryptopunks](https://github.com/larvalabs/cryptopunks): it is downloaded once, only when a visitor types a number, and the Punk is cut out in the browser. Tests on all 10,000 Punks run when that same file is copied to `real/punks.png` (git-ignored). The drawings in test/fixtures are only used by the tests.
+The figures in `test/fixtures` are drawn procedurally and only used by the tests.
 
 ## Notes
 
-Unofficial fan project · Not affiliated with, sponsored or endorsed by the LEGO Group, BrickLink or the CryptoPunks project. LEGO® is a trademark of the LEGO Group. Parts data: Rebrickable. No purchases, payments or personal data go through this site. Models are computer-checked, not physically build-tested.
+Unofficial fan project · Not affiliated with, sponsored or endorsed by the LEGO Group, BrickLink or the Ghouls project. LEGO® is a trademark of the LEGO Group. Parts data: Rebrickable. No purchases, payments or personal data go through this site. Models are computer-checked, not physically build-tested.
 
-Made by John Karp · NFT Morning.
+Made by pedr0x.eth · Tips welcome at pedr0x.eth. A fork of Punk to Bricks, made by John Karp · NFT Morning.
 
 ## License
 
-[MIT](LICENSE). See also the [disclaimer](DISCLAIMER.md). The license covers the code only, not CryptoPunks images or any trademark.
+[MIT](LICENSE). See also the [disclaimer](DISCLAIMER.md). The license covers the code only, not Ghoul images or any trademark.

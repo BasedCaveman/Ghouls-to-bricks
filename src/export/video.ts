@@ -1,7 +1,7 @@
 // Video of the build animation (square or 9:16) with synced brick clicks.
 // Recorded in real time with MediaRecorder: MP4 when the browser can, else WebM.
 import type { Model } from '../core/build';
-import type { PunkGrid } from '../core/detect';
+import type { GhoulGrid } from '../core/detect';
 import { easeIO } from '../viewer/timeline';
 import { SKY, Viewer } from '../viewer/scene';
 import { Book } from './book';
@@ -22,7 +22,7 @@ export function videoMime(): { mime: string; ext: 'mp4' | 'webm' } | null {
 export interface VideoOptions { format: VideoFormat; label: string; small?: boolean; onProgress?: (stage: 'pages' | 'recording', f: number) => void }
 
 /** A sample of the booklet's pages for the flip: cover, steps spread out, first inventory page. */
-async function bookPages(m: Model, grid: PunkGrid, label: string, width: number, onProgress: (f: number) => void): Promise<HTMLCanvasElement[]> {
+async function bookPages(m: Model, grid: GhoulGrid, label: string, width: number, onProgress: (f: number) => void): Promise<HTMLCanvasElement[]> {
   const steps = m.steps.length, want = new Set<number>([1, steps + 2]);
   const k = Math.min(16, steps);
   for (let i = 0; i < k; i++) want.add(2 + Math.round((i * (steps - 1)) / Math.max(1, k - 1)));
@@ -35,7 +35,7 @@ async function bookPages(m: Model, grid: PunkGrid, label: string, width: number,
   return out;
 }
 
-export async function recordVideo(m: Model, grid: PunkGrid, o: VideoOptions): Promise<{ blob: Blob; ext: string }> {
+export async function recordVideo(m: Model, grid: GhoulGrid, o: VideoOptions): Promise<{ blob: Blob; ext: string }> {
   const kind = videoMime();
   if (!kind) throw new Error('This browser can’t record video. Try Chrome, Edge, Firefox or Safari 14.1+.');
   const k = o.small ? 2 / 3 : 1;
@@ -52,8 +52,8 @@ export async function recordVideo(m: Model, grid: PunkGrid, o: VideoOptions): Pr
   const ax = acc.getContext('2d')!;
   const out = document.createElement('canvas'); out.width = W; out.height = H;
   const x = out.getContext('2d')!;
-  const title = o.label ? `Punk ${o.label}` : 'My CryptoPunk';
-  const sub = `${m.checks.pieces.toLocaleString('en')} pieces · ${m.size === 'xl' ? 'XL' : 'Mini'} brick bust`;
+  const title = o.label ? `Ghoul ${o.label}` : 'My Ghoul';
+  const sub = `${m.checks.pieces.toLocaleString('en')} pieces · ${m.size === 'xl' ? 'XL' : 'Mini'} brick model`;
 
   const drawModel = (t: number) => {
     v.pose(Math.min(t, tl.end)); v.setBuildCamera(Math.min(t, tl.end)); v.render();
@@ -75,12 +75,12 @@ export async function recordVideo(m: Model, grid: PunkGrid, o: VideoOptions): Pr
     if (o.format === 'story') {
       x.font = `800 ${Math.round(72 * k)}px ${FONT}`; x.fillText(title, W / 2, 150 * k);
       x.font = `500 ${Math.round(40 * k)}px ${FONT}`; x.fillText(sub, W / 2, 215 * k);
-      x.font = `600 ${Math.round(34 * k)}px ${FONT}`; x.globalAlpha = 0.75; x.fillText('Punk to Bricks', W / 2, H - 110 * k); x.globalAlpha = 1;
+      x.font = `600 ${Math.round(34 * k)}px ${FONT}`; x.globalAlpha = 0.75; x.fillText('Ghouls to Bricks', W / 2, H - 110 * k); x.globalAlpha = 1;
     } else {
       x.textAlign = 'left';
       x.font = `800 ${Math.round(44 * k)}px ${FONT}`; x.fillText(title, 44 * k, 76 * k);
       x.font = `500 ${Math.round(28 * k)}px ${FONT}`; x.fillText(sub, 44 * k, 118 * k);
-      x.font = `600 ${Math.round(24 * k)}px ${FONT}`; x.globalAlpha = 0.7; x.fillText('Punk to Bricks', 44 * k, H - 40 * k); x.globalAlpha = 1;
+      x.font = `600 ${Math.round(24 * k)}px ${FONT}`; x.globalAlpha = 0.7; x.fillText('Ghouls to Bricks', 44 * k, H - 40 * k); x.globalAlpha = 1;
     }
   };
 

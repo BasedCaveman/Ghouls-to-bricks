@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { buildModel } from '../src/core/build';
-import { detectPunk } from '../src/core/detect';
-import { REFERENCE_PUNK } from './fixtures/punks';
+import { detectGhoul } from '../src/core/detect';
+import { SKULL } from './fixtures/ghouls';
 import { brickLinkXML, partsCSV } from '../src/export/parts';
-import { punkImage } from './img';
+import { figureImage } from './img';
 
-const m = buildModel(detectPunk(punkImage(REFERENCE_PUNK, 8)), 'xl');
+const m = buildModel(detectGhoul(figureImage(SKULL, 8)), 'xl');
 
 describe('parts exports', () => {
   it('CSV lists every lot and adds up to the piece count', () => {
